@@ -1,6 +1,5 @@
 # JUCE/Audio Plugin
 Builds/
-JuceLibraryCode/
 *.sln
 *.vcxproj*
 *.user
