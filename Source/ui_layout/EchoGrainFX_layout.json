@@ -1,0 +1,58 @@
+{
+  "name": "EchoGrainFX",
+  "version": "1.0.0",
+  "framework": "React-JUCE",
+  "layout": {
+    "width": 1100,
+    "height": 680,
+    "backgroundColor": "#0b0d12"
+  },
+  "sections": {
+    "header": {
+      "title": "ECHO GRAIN FX",
+      "subtitle": "ETHEREAL GRANULAR SYNTHESIZER",
+      "height": 80
+    },
+    "mainPanel": {
+      "grainSection": {
+        "parameters": [
+          "grainSize",
+          "grainDensity", 
+          "grainPitch"
+        ]
+      },
+      "delaySection": {
+        "parameters": [
+          "delayTime",
+          "feedback"
+        ]
+      },
+      "outputSection": {
+        "parameters": [
+          "wetDry"
+        ]
+      }
+    },
+    "visualizer": {
+      "type": "waveform",
+      "height": 120
+    }
+  },
+  "colors": {
+    "background": "#0b0d12",
+    "panel": "#1a1f2e", 
+    "accent": "#4EF0FF",
+    "secondary": "#7C3AED",
+    "text": "#E2E8F0",
+    "border": "#2d3748"
+  },
+  "fileOperations": {
+    "copyUiBundle": {
+      "source": "..\\..\\ui\\dist\\ui_bundle.js",
+      "destination": "..\\..\\Resources\\ui_bundle.js",
+      "options": {
+        "overwrite": true
+      }
+    }
+  }
+}

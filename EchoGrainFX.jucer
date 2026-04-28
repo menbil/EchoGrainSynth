@@ -1,0 +1,1073 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="aNACfd" name="EchoGrainSynth" projectType="audioplug" useAppConfig="0" pluginFormats="buildVST3"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginManufacturer="SolarBumper"
+              pluginChannelConfigs="{1,2},{2,2},{0,2}" pluginCharacteristicsValue="pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
+              companyName="SolarBumper" pluginAAXIdentifier="com.SolarBumper.EchoGrainSynth"
+              pluginCode="EGfx" pluginVST3Category="Fx|Synth" pluginVSTCategory="kPlugCategSynth"
+              pluginRTASCategory="2048" pluginAUMainType="'aumu'" pluginAUSubType="'EGfx'"
+              pluginManufacturerCode="'SoBu'" cppLanguageStandard="17">
+  <MAINGROUP id="eav1zJ" name="EchoGrainSynth">
+    <GROUP id="{7359BF0F-4D83-041A-EA1D-E91FEDA1372D}" name="Source">
+      <GROUP id="{E1CD2EFB-B738-00A4-436C-59BD21AF1F3A}" name="Effects">
+        <FILE id="VamDTQ" name="FormantFilter.cpp" compile="1" resource="0"
+              file="Source/Effects/FormantFilter.cpp"/>
+        <FILE id="Cyft8i" name="FormantFilter.h" compile="0" resource="0" file="Source/Effects/FormantFilter.h"/>
+        <FILE id="Btqysp" name="GlitchEffect.cpp" compile="1" resource="0"
+              file="Source/Effects/GlitchEffect.cpp"/>
+        <FILE id="b5jI3r" name="GlitchEffect.h" compile="0" resource="0" file="Source/Effects/GlitchEffect.h"/>
+        <FILE id="LgQEfW" name="ReverbEffect.cpp" compile="1" resource="0"
+              file="Source/Effects/ReverbEffect.cpp"/>
+        <FILE id="zUuGO0" name="ReverbEffect.h" compile="0" resource="0" file="Source/Effects/ReverbEffect.h"/>
+        <FILE id="eD1LQC" name="StretchEffect.cpp" compile="1" resource="0"
+              file="Source/Effects/StretchEffect.cpp"/>
+        <FILE id="BbElQa" name="StretchEffect.h" compile="0" resource="0" file="Source/Effects/StretchEffect.h"/>
+      </GROUP>
+      <GROUP id="{F2E3D4C5-9A8B-7C6D-5E4F-123456789ABC}" name="UI Components">
+        <FILE id="ADSR01" name="AdsrComponent.cpp" compile="1" resource="0"
+              file="Source/AdsrComponent.cpp"/>
+        <FILE id="ADSR02" name="AdsrComponent.h" compile="0" resource="0" file="Source/AdsrComponent.h"/>
+        <FILE id="WAVE01" name="WaveformView.cpp" compile="1" resource="0"
+              file="Source/WaveformView.cpp"/>
+        <FILE id="WAVE02" name="WaveformView.h" compile="0" resource="0" file="Source/WaveformView.h"/>
+        <FILE id="XYMAP1" name="XYPadMappingPanel.cpp" compile="1" resource="0"
+              file="Source/XYPadMappingPanel.cpp"/>
+        <FILE id="XYMAP2" name="XYPadMappingPanel.h" compile="0" resource="0"
+              file="Source/XYPadMappingPanel.h"/>
+        <FILE id="LFOMO1" name="LfoMonitorComponent.cpp" compile="1" resource="0"
+              file="Source/LfoMonitorComponent.cpp"/>
+        <FILE id="LFOMO2" name="LfoMonitorComponent.h" compile="0" resource="0"
+              file="Source/LfoMonitorComponent.h"/>
+        <FILE id="GRAIN1" name="ActiveGrainsDisplay.cpp" compile="1" resource="0"
+              file="Source/ActiveGrainsDisplay.cpp"/>
+        <FILE id="GRAIN2" name="ActiveGrainsDisplay.h" compile="0" resource="0"
+              file="Source/ActiveGrainsDisplay.h"/>
+      </GROUP>
+      <FILE id="UQwJDQ" name="GrainEngine.cpp" compile="1" resource="0" file="Source/GrainEngine.cpp"/>
+      <FILE id="pv7ops" name="GrainEngine.h" compile="0" resource="0" file="Source/GrainEngine.h"/>
+      <FILE id="cEvolV" name="PluginProcessor.cpp" compile="1" resource="0"
+            file="Source/PluginProcessor.cpp"/>
+      <FILE id="pmVQZq" name="PluginProcessor.h" compile="0" resource="0"
+            file="Source/PluginProcessor.h"/>
+      <FILE id="ruiFhe" name="NativePluginEditor.cpp" compile="1" resource="0"
+            file="Source/NativePluginEditor.cpp"/>
+      <FILE id="svlxad" name="NativePluginEditor.h" compile="0" resource="0"
+            file="Source/NativePluginEditor.h"/>
+      <GROUP id="{58D96A30-A537-4138-9B45-20F4811CE38A}" name="lookandfeel">
+        <FILE id="LAF001" name="EchoGrainLookAndFeel.cpp" compile="1" resource="0"
+              file="Source/lookandfeel/EchoGrainLookAndFeel.cpp"/>
+        <FILE id="LAF002" name="EchoGrainLookAndFeel.h" compile="0" resource="0"
+              file="Source/lookandfeel/EchoGrainLookAndFeel.h"/>
+      </GROUP>
+      <FILE id="kLmNop" name="PresetManager.cpp" compile="1" resource="0"
+            file="Source/PresetManager.cpp"/>
+      <FILE id="qRsTuv" name="PresetManager.h" compile="0" resource="0" file="Source/PresetManager.h"/>
+      <FILE id="hue98U" name="SampleManager.cpp" compile="1" resource="0"
+            file="Source/SampleManager.cpp"/>
+      <FILE id="ZP3TIm" name="SampleManager.h" compile="0" resource="0" file="Source/SampleManager.h"/>
+      <FILE id="VVhsCN" name="XYPadComponent.cpp" compile="1" resource="0"
+            file="Source/XYPadComponent.cpp"/>
+      <FILE id="otl4ni" name="XYPadComponent.h" compile="0" resource="0"
+            file="Source/XYPadComponent.h"/>
+    </GROUP>
+    <GROUP id="{DC4F7A26-68D9-ADF8-D2AF-CC183856C574}" name="Synth">
+      <GROUP id="{12BBF38D-C641-47EF-A5D2-0192A5F9DC69}" name="ui">
+        <GROUP id="{F2A4E731-441E-7BDB-91F2-123F5F666CC0}" name="build"/>
+        <GROUP id="{C6D6320E-4419-1EB3-5748-FB76131694B7}" name="dist">
+          <FILE id="c4B2a8" name="ui_bundle.js" compile="0" resource="1" file="ui/dist/ui_bundle.js"/>
+        </GROUP>
+        <GROUP id="{BA7314A7-F6BE-408F-6D98-165B2D6FA1EB}" name="js">
+          <GROUP id="{6F912E37-9BE8-F88D-3144-81E8689444A4}" name="components">
+            <FILE id="TmFBVC" name="AdsrEnvelope.js" compile="0" resource="1" file="ui/js/components/AdsrEnvelope.js"/>
+            <FILE id="OKZ0HH" name="CyanPanel.js" compile="0" resource="1" file="ui/js/components/CyanPanel.js"/>
+            <FILE id="yQQpDz" name="Footer.js" compile="0" resource="1" file="ui/js/components/Footer.js"/>
+            <FILE id="tma41G" name="GlitchPanel.js" compile="0" resource="1" file="ui/js/components/GlitchPanel.js"/>
+            <FILE id="OkS6bL" name="GreenPanel.js" compile="0" resource="1" file="ui/js/components/GreenPanel.js"/>
+            <FILE id="QToOBF" name="Header.js" compile="0" resource="1" file="ui/js/components/Header.js"/>
+            <FILE id="J1AUxY" name="Knob.js" compile="0" resource="1" file="ui/js/components/Knob.js"/>
+            <FILE id="yHX6MP" name="LfoMiniGraph.js" compile="0" resource="1" file="ui/js/components/LfoMiniGraph.js"/>
+            <FILE id="Zn1PPq" name="OrangePanel.js" compile="0" resource="1" file="ui/js/components/OrangePanel.js"/>
+            <FILE id="w5oHx1" name="VioletPanel.js" compile="0" resource="1" file="ui/js/components/VioletPanel.js"/>
+            <FILE id="F5HGoq" name="WaveformView.js" compile="0" resource="1" file="ui/js/components/WaveformView.js"/>
+            <FILE id="b4aIu0" name="XYPad.js" compile="0" resource="1" file="ui/js/components/XYPad.js"/>
+          </GROUP>
+          <GROUP id="{3B21E80D-677C-E00C-96BF-C8246A0CF9C6}" name="design">
+            <FILE id="jx9g2n" name="tokens.js" compile="0" resource="1" file="ui/js/design/tokens.js"/>
+          </GROUP>
+          <FILE id="R9C7kJ" name="index.js" compile="0" resource="1" file="ui/js/index.js"/>
+          <FILE id="vmPTd6" name="index.tsx" compile="0" resource="1" file="ui/js/index.tsx"/>
+          <FILE id="JvXgdX" name="index_minimal.js" compile="0" resource="1"
+                file="ui/js/index_minimal.js"/>
+        </GROUP>
+        <GROUP id="{6F7A075A-38FC-DC44-C227-FE26B22E0ACB}" name="node_modules">
+          <GROUP id="{1E0FC0A7-B656-196E-7DB7-00A40406881B}" name="@esbuild">
+            <GROUP id="{0CFCCD50-E0D2-4AB5-4F8E-CFE14179A7E6}" name="win32-x64">
+              <FILE id="liJWcj" name="esbuild.exe" compile="0" resource="1" file="ui/node_modules/@esbuild/win32-x64/esbuild.exe"/>
+              <FILE id="LwZ3En" name="package.json" compile="0" resource="1" file="ui/node_modules/@esbuild/win32-x64/package.json"/>
+              <FILE id="DEXk9E" name="README.md" compile="0" resource="1" file="ui/node_modules/@esbuild/win32-x64/README.md"/>
+            </GROUP>
+          </GROUP>
+          <GROUP id="{8013AA4C-B8E1-1342-93D3-FA47ABA69C83}" name="@isaacs">
+            <GROUP id="{791CD6E0-2023-1C80-89BD-FCB3CD9A52B3}" name="cliui">
+              <GROUP id="{6CC5DD65-CF30-9B94-9E32-3C67EA5C3C1D}" name="build">
+                <GROUP id="{3AB134A6-0D12-417C-B14B-6CE8B444E627}" name="lib">
+                  <FILE id="DuYShW" name="index.js" compile="0" resource="1" file="ui/node_modules/@isaacs/cliui/build/lib/index.js"/>
+                </GROUP>
+                <FILE id="WYNBr6" name="index.cjs" compile="0" resource="1" file="ui/node_modules/@isaacs/cliui/build/index.cjs"/>
+                <FILE id="TJPlSy" name="index.d.cts" compile="0" resource="1" file="ui/node_modules/@isaacs/cliui/build/index.d.cts"/>
+              </GROUP>
+              <FILE id="xQSnbT" name="index.mjs" compile="0" resource="1" file="ui/node_modules/@isaacs/cliui/index.mjs"/>
+              <FILE id="ohRY5p" name="LICENSE.txt" compile="0" resource="1" file="ui/node_modules/@isaacs/cliui/LICENSE.txt"/>
+              <FILE id="Tec2dN" name="package.json" compile="0" resource="1" file="ui/node_modules/@isaacs/cliui/package.json"/>
+              <FILE id="I7FuKe" name="README.md" compile="0" resource="1" file="ui/node_modules/@isaacs/cliui/README.md"/>
+            </GROUP>
+          </GROUP>
+          <GROUP id="{EE8321CC-EF59-CCAF-27C5-2BD8A5EE52AF}" name="@pkgjs">
+            <GROUP id="{716243DA-7E9A-D6BC-13E5-C0ACFC8166D0}" name="parseargs">
+              <GROUP id="{04412D5E-B82A-5006-875F-D53FCF1C999F}" name="examples">
+                <FILE id="Js4DyU" name="is-default-value.js" compile="0" resource="1"
+                      file="ui/node_modules/@pkgjs/parseargs/examples/is-default-value.js"/>
+                <FILE id="OoWpZF" name="limit-long-syntax.js" compile="0" resource="1"
+                      file="ui/node_modules/@pkgjs/parseargs/examples/limit-long-syntax.js"/>
+                <FILE id="PiIp4U" name="negate.js" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/examples/negate.js"/>
+                <FILE id="nge38T" name="no-repeated-options.js" compile="0" resource="1"
+                      file="ui/node_modules/@pkgjs/parseargs/examples/no-repeated-options.js"/>
+                <FILE id="MbMvUz" name="ordered-options.mjs" compile="0" resource="1"
+                      file="ui/node_modules/@pkgjs/parseargs/examples/ordered-options.mjs"/>
+                <FILE id="aXiS5r" name="simple-hard-coded.js" compile="0" resource="1"
+                      file="ui/node_modules/@pkgjs/parseargs/examples/simple-hard-coded.js"/>
+              </GROUP>
+              <GROUP id="{8B00951F-73B3-4477-FAF6-1503E3737A91}" name="internal">
+                <FILE id="zTUmX7" name="errors.js" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/internal/errors.js"/>
+                <FILE id="LxQDKO" name="primordials.js" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/internal/primordials.js"/>
+                <FILE id="E38LOa" name="util.js" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/internal/util.js"/>
+                <FILE id="s6JUcu" name="validators.js" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/internal/validators.js"/>
+              </GROUP>
+              <FILE id="T61ypH" name="CHANGELOG.md" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/CHANGELOG.md"/>
+              <FILE id="ibuA2L" name="index.js" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/index.js"/>
+              <FILE id="mXc5Lo" name="LICENSE" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/LICENSE"/>
+              <FILE id="sTc4th" name="package.json" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/package.json"/>
+              <FILE id="eENhLS" name="README.md" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/README.md"/>
+              <FILE id="RybRbR" name="utils.js" compile="0" resource="1" file="ui/node_modules/@pkgjs/parseargs/utils.js"/>
+            </GROUP>
+          </GROUP>
+          <GROUP id="{63F4B70B-D2B0-F8A3-7056-AB472E33B6FB}" name="ansi-regex">
+            <FILE id="draIXt" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/ansi-regex/index.d.ts"/>
+            <FILE id="piY4jv" name="index.js" compile="0" resource="1" file="ui/node_modules/ansi-regex/index.js"/>
+            <FILE id="m0couy" name="license" compile="0" resource="1" file="ui/node_modules/ansi-regex/license"/>
+            <FILE id="wUA5v5" name="package.json" compile="0" resource="1" file="ui/node_modules/ansi-regex/package.json"/>
+            <FILE id="CLa6E2" name="readme.md" compile="0" resource="1" file="ui/node_modules/ansi-regex/readme.md"/>
+          </GROUP>
+          <GROUP id="{2678756B-1FAD-F9CF-73C6-5A0DA252F9ED}" name="ansi-styles">
+            <FILE id="OGAi7g" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/ansi-styles/index.d.ts"/>
+            <FILE id="CIjOC1" name="index.js" compile="0" resource="1" file="ui/node_modules/ansi-styles/index.js"/>
+            <FILE id="aRvJCM" name="license" compile="0" resource="1" file="ui/node_modules/ansi-styles/license"/>
+            <FILE id="RRk5yK" name="package.json" compile="0" resource="1" file="ui/node_modules/ansi-styles/package.json"/>
+            <FILE id="Ch0g7N" name="readme.md" compile="0" resource="1" file="ui/node_modules/ansi-styles/readme.md"/>
+          </GROUP>
+          <GROUP id="{A4BF880B-46D4-DC0C-8FC5-671FEB09AFD6}" name="balanced-match">
+            <FILE id="OUioPh" name="index.js" compile="0" resource="1" file="ui/node_modules/balanced-match/index.js"/>
+            <FILE id="MLs8La" name="LICENSE.md" compile="0" resource="1" file="ui/node_modules/balanced-match/LICENSE.md"/>
+            <FILE id="GsPgMB" name="package.json" compile="0" resource="1" file="ui/node_modules/balanced-match/package.json"/>
+            <FILE id="wjT5A5" name="README.md" compile="0" resource="1" file="ui/node_modules/balanced-match/README.md"/>
+          </GROUP>
+          <GROUP id="{7EC73B0B-4652-D2E4-EABD-C63E53A8145C}" name="brace-expansion">
+            <FILE id="rO1udM" name="index.js" compile="0" resource="1" file="ui/node_modules/brace-expansion/index.js"/>
+            <FILE id="WEI066" name="LICENSE" compile="0" resource="1" file="ui/node_modules/brace-expansion/LICENSE"/>
+            <FILE id="WJxFQp" name="package.json" compile="0" resource="1" file="ui/node_modules/brace-expansion/package.json"/>
+            <FILE id="oluFzi" name="README.md" compile="0" resource="1" file="ui/node_modules/brace-expansion/README.md"/>
+          </GROUP>
+          <GROUP id="{F46CAD59-7D0F-F904-FD9F-D8FB7F630CEA}" name="color-convert">
+            <FILE id="dMqn5R" name="CHANGELOG.md" compile="0" resource="1" file="ui/node_modules/color-convert/CHANGELOG.md"/>
+            <FILE id="OV7Qiv" name="conversions.js" compile="0" resource="1" file="ui/node_modules/color-convert/conversions.js"/>
+            <FILE id="ueF2va" name="index.js" compile="0" resource="1" file="ui/node_modules/color-convert/index.js"/>
+            <FILE id="TaAcLs" name="LICENSE" compile="0" resource="1" file="ui/node_modules/color-convert/LICENSE"/>
+            <FILE id="lwhSvV" name="package.json" compile="0" resource="1" file="ui/node_modules/color-convert/package.json"/>
+            <FILE id="Y8z8WJ" name="README.md" compile="0" resource="1" file="ui/node_modules/color-convert/README.md"/>
+            <FILE id="MCZdd4" name="route.js" compile="0" resource="1" file="ui/node_modules/color-convert/route.js"/>
+          </GROUP>
+          <GROUP id="{BD571CF2-ACEC-FB77-E827-5AF1BFB2AF7F}" name="color-name">
+            <FILE id="ZccmnM" name="index.js" compile="0" resource="1" file="ui/node_modules/color-name/index.js"/>
+            <FILE id="GVlqNU" name="LICENSE" compile="0" resource="1" file="ui/node_modules/color-name/LICENSE"/>
+            <FILE id="qWugSt" name="package.json" compile="0" resource="1" file="ui/node_modules/color-name/package.json"/>
+            <FILE id="qWMZQQ" name="README.md" compile="0" resource="1" file="ui/node_modules/color-name/README.md"/>
+          </GROUP>
+          <GROUP id="{8F15C45D-E7DB-C68B-D326-E0B5960E9C06}" name="cross-spawn">
+            <GROUP id="{45BD9073-0252-1031-B638-F48CDB4F8DE1}" name="lib">
+              <GROUP id="{3DAABA0C-4F1C-9EA7-8485-0DC1AE30556C}" name="util">
+                <FILE id="BYaiE9" name="escape.js" compile="0" resource="1" file="ui/node_modules/cross-spawn/lib/util/escape.js"/>
+                <FILE id="fnDDlt" name="readShebang.js" compile="0" resource="1" file="ui/node_modules/cross-spawn/lib/util/readShebang.js"/>
+                <FILE id="nBWKiW" name="resolveCommand.js" compile="0" resource="1"
+                      file="ui/node_modules/cross-spawn/lib/util/resolveCommand.js"/>
+              </GROUP>
+              <FILE id="vpMH05" name="enoent.js" compile="0" resource="1" file="ui/node_modules/cross-spawn/lib/enoent.js"/>
+              <FILE id="FKQAul" name="parse.js" compile="0" resource="1" file="ui/node_modules/cross-spawn/lib/parse.js"/>
+            </GROUP>
+            <FILE id="srt9SG" name="index.js" compile="0" resource="1" file="ui/node_modules/cross-spawn/index.js"/>
+            <FILE id="i0VPzb" name="LICENSE" compile="0" resource="1" file="ui/node_modules/cross-spawn/LICENSE"/>
+            <FILE id="iNPCy2" name="package.json" compile="0" resource="1" file="ui/node_modules/cross-spawn/package.json"/>
+            <FILE id="fOtkZH" name="README.md" compile="0" resource="1" file="ui/node_modules/cross-spawn/README.md"/>
+          </GROUP>
+          <GROUP id="{154BC274-4AEC-E8CE-9994-5DDECBCE3802}" name="eastasianwidth">
+            <FILE id="GFjTSt" name="eastasianwidth.js" compile="0" resource="1"
+                  file="ui/node_modules/eastasianwidth/eastasianwidth.js"/>
+            <FILE id="DRZwis" name="package.json" compile="0" resource="1" file="ui/node_modules/eastasianwidth/package.json"/>
+            <FILE id="mLrV1Y" name="README.md" compile="0" resource="1" file="ui/node_modules/eastasianwidth/README.md"/>
+          </GROUP>
+          <GROUP id="{567DCD8E-7FDA-7C25-3904-B279FECA3676}" name="emoji-regex">
+            <GROUP id="{C4C9B8AE-67C5-E528-DB26-7A9C28F54331}" name="es2015">
+              <FILE id="Z5FrRD" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/emoji-regex/es2015/index.d.ts"/>
+              <FILE id="fZCVRX" name="index.js" compile="0" resource="1" file="ui/node_modules/emoji-regex/es2015/index.js"/>
+              <FILE id="PE7WLk" name="RGI_Emoji.d.ts" compile="0" resource="1" file="ui/node_modules/emoji-regex/es2015/RGI_Emoji.d.ts"/>
+              <FILE id="CViWXu" name="RGI_Emoji.js" compile="0" resource="1" file="ui/node_modules/emoji-regex/es2015/RGI_Emoji.js"/>
+              <FILE id="JYmqeQ" name="text.d.ts" compile="0" resource="1" file="ui/node_modules/emoji-regex/es2015/text.d.ts"/>
+              <FILE id="L1fnWb" name="text.js" compile="0" resource="1" file="ui/node_modules/emoji-regex/es2015/text.js"/>
+            </GROUP>
+            <FILE id="QenJ1S" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/emoji-regex/index.d.ts"/>
+            <FILE id="lEWiUd" name="index.js" compile="0" resource="1" file="ui/node_modules/emoji-regex/index.js"/>
+            <FILE id="toadbo" name="LICENSE-MIT.txt" compile="0" resource="1" file="ui/node_modules/emoji-regex/LICENSE-MIT.txt"/>
+            <FILE id="OXhJcH" name="package.json" compile="0" resource="1" file="ui/node_modules/emoji-regex/package.json"/>
+            <FILE id="JmxVe5" name="README.md" compile="0" resource="1" file="ui/node_modules/emoji-regex/README.md"/>
+            <FILE id="rDisoI" name="RGI_Emoji.d.ts" compile="0" resource="1" file="ui/node_modules/emoji-regex/RGI_Emoji.d.ts"/>
+            <FILE id="n2Bdy4" name="RGI_Emoji.js" compile="0" resource="1" file="ui/node_modules/emoji-regex/RGI_Emoji.js"/>
+            <FILE id="dILJVd" name="text.d.ts" compile="0" resource="1" file="ui/node_modules/emoji-regex/text.d.ts"/>
+            <FILE id="NLFLfp" name="text.js" compile="0" resource="1" file="ui/node_modules/emoji-regex/text.js"/>
+          </GROUP>
+          <GROUP id="{74C7DE03-C3D4-0BFB-4296-72215A3D1769}" name="esbuild">
+            <GROUP id="{77198297-FFC6-0A92-1B17-D21A6B94C11F}" name="bin">
+              <FILE id="pwkrzz" name="esbuild" compile="0" resource="1" file="ui/node_modules/esbuild/bin/esbuild"/>
+            </GROUP>
+            <GROUP id="{A7B6D1A3-8A72-BB29-5CD7-6680099FBCB0}" name="lib">
+              <FILE id="A1tuyK" name="main.d.ts" compile="0" resource="1" file="ui/node_modules/esbuild/lib/main.d.ts"/>
+              <FILE id="t4mdRV" name="main.js" compile="0" resource="1" file="ui/node_modules/esbuild/lib/main.js"/>
+            </GROUP>
+            <FILE id="YnFMHY" name="install.js" compile="0" resource="1" file="ui/node_modules/esbuild/install.js"/>
+            <FILE id="jvf59c" name="LICENSE.md" compile="0" resource="1" file="ui/node_modules/esbuild/LICENSE.md"/>
+            <FILE id="f0IuWX" name="package.json" compile="0" resource="1" file="ui/node_modules/esbuild/package.json"/>
+            <FILE id="HZxqLM" name="README.md" compile="0" resource="1" file="ui/node_modules/esbuild/README.md"/>
+          </GROUP>
+          <GROUP id="{BBC6ED1F-AE82-AE3B-693A-50FA1C8EBFA5}" name="foreground-child">
+            <GROUP id="{B810703B-3FC6-A2AB-FCEE-919AEBD864F6}" name="dist">
+              <GROUP id="{EA52D5FC-919F-54EF-0DD8-9D9A0503B88E}" name="commonjs">
+                <FILE id="CjhUj8" name="all-signals.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/commonjs/all-signals.d.ts"/>
+                <FILE id="e23cYo" name="all-signals.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/commonjs/all-signals.d.ts.map"/>
+                <FILE id="KRtHLU" name="all-signals.js" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/commonjs/all-signals.js"/>
+                <FILE id="xCVayc" name="all-signals.js.map" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/commonjs/all-signals.js.map"/>
+                <FILE id="RkXAVK" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/commonjs/index.d.ts"/>
+                <FILE id="nVDirh" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/commonjs/index.d.ts.map"/>
+                <FILE id="Rd3uz2" name="index.js" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/commonjs/index.js"/>
+                <FILE id="CtF3V2" name="index.js.map" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/commonjs/index.js.map"/>
+                <FILE id="lDUtNA" name="package.json" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/commonjs/package.json"/>
+                <FILE id="TTuDAe" name="proxy-signals.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/commonjs/proxy-signals.d.ts"/>
+                <FILE id="ZQOMUV" name="proxy-signals.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/commonjs/proxy-signals.d.ts.map"/>
+                <FILE id="S3qqxz" name="proxy-signals.js" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/commonjs/proxy-signals.js"/>
+                <FILE id="AYnIaP" name="proxy-signals.js.map" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/commonjs/proxy-signals.js.map"/>
+                <FILE id="RLYWLG" name="watchdog.d.ts" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/commonjs/watchdog.d.ts"/>
+                <FILE id="AvYe3F" name="watchdog.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/commonjs/watchdog.d.ts.map"/>
+                <FILE id="vuw6hd" name="watchdog.js" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/commonjs/watchdog.js"/>
+                <FILE id="SF7C2a" name="watchdog.js.map" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/commonjs/watchdog.js.map"/>
+              </GROUP>
+              <GROUP id="{1685506F-14A1-83BF-0A65-BB6F22CFEF04}" name="esm">
+                <FILE id="aZP9LX" name="all-signals.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/esm/all-signals.d.ts"/>
+                <FILE id="SV7k7F" name="all-signals.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/esm/all-signals.d.ts.map"/>
+                <FILE id="n9wdnQ" name="all-signals.js" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/esm/all-signals.js"/>
+                <FILE id="AzBPv8" name="all-signals.js.map" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/esm/all-signals.js.map"/>
+                <FILE id="JE4H42" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/esm/index.d.ts"/>
+                <FILE id="OlUvSs" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/esm/index.d.ts.map"/>
+                <FILE id="Xd20T7" name="index.js" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/esm/index.js"/>
+                <FILE id="tCdev2" name="index.js.map" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/esm/index.js.map"/>
+                <FILE id="hrahmF" name="package.json" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/esm/package.json"/>
+                <FILE id="AJAPeS" name="proxy-signals.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/esm/proxy-signals.d.ts"/>
+                <FILE id="v7xLPD" name="proxy-signals.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/esm/proxy-signals.d.ts.map"/>
+                <FILE id="eavHhy" name="proxy-signals.js" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/esm/proxy-signals.js"/>
+                <FILE id="E2Gg7z" name="proxy-signals.js.map" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/esm/proxy-signals.js.map"/>
+                <FILE id="vknziP" name="watchdog.d.ts" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/esm/watchdog.d.ts"/>
+                <FILE id="tZf7Gl" name="watchdog.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/foreground-child/dist/esm/watchdog.d.ts.map"/>
+                <FILE id="S2Ploh" name="watchdog.js" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/esm/watchdog.js"/>
+                <FILE id="YUCEDf" name="watchdog.js.map" compile="0" resource="1" file="ui/node_modules/foreground-child/dist/esm/watchdog.js.map"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="FV2Z8Q" name="LICENSE" compile="0" resource="1" file="ui/node_modules/foreground-child/LICENSE"/>
+            <FILE id="AXMrSa" name="package.json" compile="0" resource="1" file="ui/node_modules/foreground-child/package.json"/>
+            <FILE id="UGJerk" name="README.md" compile="0" resource="1" file="ui/node_modules/foreground-child/README.md"/>
+          </GROUP>
+          <GROUP id="{68FD6D0C-2422-C939-E11F-F03621578C2B}" name="glob">
+            <GROUP id="{3743469C-0A6F-C742-41CC-34F8101D8FE6}" name="dist">
+              <GROUP id="{34F24430-777C-6834-60FD-459B265794BD}" name="commonjs">
+                <FILE id="REIRx6" name="glob.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/glob.d.ts"/>
+                <FILE id="kXEklH" name="glob.d.ts.map" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/glob.d.ts.map"/>
+                <FILE id="TZJ6Zu" name="glob.js" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/glob.js"/>
+                <FILE id="mCseMa" name="glob.js.map" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/glob.js.map"/>
+                <FILE id="cwVOgq" name="has-magic.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/has-magic.d.ts"/>
+                <FILE id="Dhvw1X" name="has-magic.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/glob/dist/commonjs/has-magic.d.ts.map"/>
+                <FILE id="GyyihL" name="has-magic.js" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/has-magic.js"/>
+                <FILE id="BlMol1" name="has-magic.js.map" compile="0" resource="1"
+                      file="ui/node_modules/glob/dist/commonjs/has-magic.js.map"/>
+                <FILE id="sbchO2" name="ignore.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/ignore.d.ts"/>
+                <FILE id="YQG8CB" name="ignore.d.ts.map" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/ignore.d.ts.map"/>
+                <FILE id="t0087t" name="ignore.js" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/ignore.js"/>
+                <FILE id="r5Fuj7" name="ignore.js.map" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/ignore.js.map"/>
+                <FILE id="FjuqxL" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/index.d.ts"/>
+                <FILE id="Pxw2o5" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/index.d.ts.map"/>
+                <FILE id="V0VBT2" name="index.js" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/index.js"/>
+                <FILE id="jQrrno" name="index.js.map" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/index.js.map"/>
+                <FILE id="AaIbNv" name="package.json" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/package.json"/>
+                <FILE id="ELZToj" name="pattern.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/pattern.d.ts"/>
+                <FILE id="dcmZSe" name="pattern.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/glob/dist/commonjs/pattern.d.ts.map"/>
+                <FILE id="ecejZH" name="pattern.js" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/pattern.js"/>
+                <FILE id="f10fSw" name="pattern.js.map" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/pattern.js.map"/>
+                <FILE id="NY6daK" name="processor.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/processor.d.ts"/>
+                <FILE id="FSeCR8" name="processor.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/glob/dist/commonjs/processor.d.ts.map"/>
+                <FILE id="jTLq3C" name="processor.js" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/processor.js"/>
+                <FILE id="UcH20Y" name="processor.js.map" compile="0" resource="1"
+                      file="ui/node_modules/glob/dist/commonjs/processor.js.map"/>
+                <FILE id="r0PJtS" name="walker.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/walker.d.ts"/>
+                <FILE id="Uw3M80" name="walker.d.ts.map" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/walker.d.ts.map"/>
+                <FILE id="bLlDY8" name="walker.js" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/walker.js"/>
+                <FILE id="lHuOpn" name="walker.js.map" compile="0" resource="1" file="ui/node_modules/glob/dist/commonjs/walker.js.map"/>
+              </GROUP>
+              <GROUP id="{7BE635C0-3165-212A-E9AB-0F41ED674D52}" name="esm">
+                <FILE id="IqhXpu" name="bin.d.mts" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/bin.d.mts"/>
+                <FILE id="iBSL1H" name="bin.d.mts.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/bin.d.mts.map"/>
+                <FILE id="nhrZrU" name="bin.mjs" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/bin.mjs"/>
+                <FILE id="qexGyH" name="bin.mjs.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/bin.mjs.map"/>
+                <FILE id="zjPi3R" name="glob.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/glob.d.ts"/>
+                <FILE id="aCH5Ep" name="glob.d.ts.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/glob.d.ts.map"/>
+                <FILE id="KfTKix" name="glob.js" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/glob.js"/>
+                <FILE id="QSyujS" name="glob.js.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/glob.js.map"/>
+                <FILE id="hZ8wUn" name="has-magic.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/has-magic.d.ts"/>
+                <FILE id="hW3qkg" name="has-magic.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/glob/dist/esm/has-magic.d.ts.map"/>
+                <FILE id="nNVS9u" name="has-magic.js" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/has-magic.js"/>
+                <FILE id="nJxOlw" name="has-magic.js.map" compile="0" resource="1"
+                      file="ui/node_modules/glob/dist/esm/has-magic.js.map"/>
+                <FILE id="gpx147" name="ignore.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/ignore.d.ts"/>
+                <FILE id="WK0QUC" name="ignore.d.ts.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/ignore.d.ts.map"/>
+                <FILE id="MNxSdA" name="ignore.js" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/ignore.js"/>
+                <FILE id="lp2Pku" name="ignore.js.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/ignore.js.map"/>
+                <FILE id="oef7MR" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/index.d.ts"/>
+                <FILE id="nA6xRS" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/index.d.ts.map"/>
+                <FILE id="rUTBEX" name="index.js" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/index.js"/>
+                <FILE id="AQn0Hg" name="index.js.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/index.js.map"/>
+                <FILE id="w61J9X" name="package.json" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/package.json"/>
+                <FILE id="k1DAPe" name="pattern.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/pattern.d.ts"/>
+                <FILE id="Dg2Bq0" name="pattern.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/glob/dist/esm/pattern.d.ts.map"/>
+                <FILE id="K3O2ok" name="pattern.js" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/pattern.js"/>
+                <FILE id="Iat15e" name="pattern.js.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/pattern.js.map"/>
+                <FILE id="kcKWVe" name="processor.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/processor.d.ts"/>
+                <FILE id="YcmdTi" name="processor.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/glob/dist/esm/processor.d.ts.map"/>
+                <FILE id="eFt14S" name="processor.js" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/processor.js"/>
+                <FILE id="PsnkBj" name="processor.js.map" compile="0" resource="1"
+                      file="ui/node_modules/glob/dist/esm/processor.js.map"/>
+                <FILE id="vHKPSH" name="walker.d.ts" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/walker.d.ts"/>
+                <FILE id="vxATWU" name="walker.d.ts.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/walker.d.ts.map"/>
+                <FILE id="q0124i" name="walker.js" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/walker.js"/>
+                <FILE id="IMm9eG" name="walker.js.map" compile="0" resource="1" file="ui/node_modules/glob/dist/esm/walker.js.map"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="aDyKeA" name="LICENSE" compile="0" resource="1" file="ui/node_modules/glob/LICENSE"/>
+            <FILE id="GIIAma" name="package.json" compile="0" resource="1" file="ui/node_modules/glob/package.json"/>
+            <FILE id="rfpijm" name="README.md" compile="0" resource="1" file="ui/node_modules/glob/README.md"/>
+          </GROUP>
+          <GROUP id="{76533CB7-B545-F05F-3CF3-5E33FEBFE8CF}" name="is-fullwidth-code-point">
+            <FILE id="KVnSf5" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/is-fullwidth-code-point/index.d.ts"/>
+            <FILE id="r9QDuC" name="index.js" compile="0" resource="1" file="ui/node_modules/is-fullwidth-code-point/index.js"/>
+            <FILE id="P3wFqp" name="license" compile="0" resource="1" file="ui/node_modules/is-fullwidth-code-point/license"/>
+            <FILE id="CfeIpm" name="package.json" compile="0" resource="1" file="ui/node_modules/is-fullwidth-code-point/package.json"/>
+            <FILE id="aG1Rod" name="readme.md" compile="0" resource="1" file="ui/node_modules/is-fullwidth-code-point/readme.md"/>
+          </GROUP>
+          <GROUP id="{8D8FCA4C-D994-DA0D-9D14-D5D5582FB220}" name="isexe">
+            <GROUP id="{0F573E60-CCCC-4CDF-30FA-D0E8B353B907}" name="test">
+              <FILE id="yTvSJG" name="basic.js" compile="0" resource="1" file="ui/node_modules/isexe/test/basic.js"/>
+            </GROUP>
+            <FILE id="NNOrIL" name="index.js" compile="0" resource="1" file="ui/node_modules/isexe/index.js"/>
+            <FILE id="yvXiUd" name="LICENSE" compile="0" resource="1" file="ui/node_modules/isexe/LICENSE"/>
+            <FILE id="gTRwlY" name="mode.js" compile="0" resource="1" file="ui/node_modules/isexe/mode.js"/>
+            <FILE id="sgUiZr" name="package.json" compile="0" resource="1" file="ui/node_modules/isexe/package.json"/>
+            <FILE id="clp0Ml" name="README.md" compile="0" resource="1" file="ui/node_modules/isexe/README.md"/>
+            <FILE id="lz5bBE" name="windows.js" compile="0" resource="1" file="ui/node_modules/isexe/windows.js"/>
+          </GROUP>
+          <GROUP id="{A254648B-3CBB-5DE5-26AD-96C3C8585DD7}" name="jackspeak">
+            <GROUP id="{2C0C44AC-C433-BD0F-0CFC-C6BB66F07A45}" name="dist">
+              <GROUP id="{3E5F1946-3914-64DD-73D5-3E2E87A29FC0}" name="commonjs">
+                <FILE id="nA0wPC" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/commonjs/index.d.ts"/>
+                <FILE id="Sz6xEr" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/commonjs/index.d.ts.map"/>
+                <FILE id="piryxf" name="index.js" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/commonjs/index.js"/>
+                <FILE id="ZdxZma" name="index.js.map" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/commonjs/index.js.map"/>
+                <FILE id="Rok0GT" name="package.json" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/commonjs/package.json"/>
+                <FILE id="MG5XUC" name="parse-args-cjs.cjs.map" compile="0" resource="1"
+                      file="ui/node_modules/jackspeak/dist/commonjs/parse-args-cjs.cjs.map"/>
+                <FILE id="Mghv6F" name="parse-args-cjs.d.cts.map" compile="0" resource="1"
+                      file="ui/node_modules/jackspeak/dist/commonjs/parse-args-cjs.d.cts.map"/>
+                <FILE id="c6Wfow" name="parse-args.d.ts" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/commonjs/parse-args.d.ts"/>
+                <FILE id="W9YH7a" name="parse-args.js" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/commonjs/parse-args.js"/>
+              </GROUP>
+              <GROUP id="{7DBA15E5-FF00-763F-9087-F4A8022ED18B}" name="esm">
+                <FILE id="AdvOcJ" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/esm/index.d.ts"/>
+                <FILE id="zXF44M" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/esm/index.d.ts.map"/>
+                <FILE id="bDZBMX" name="index.js" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/esm/index.js"/>
+                <FILE id="YRdJ7G" name="index.js.map" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/esm/index.js.map"/>
+                <FILE id="mTslOA" name="package.json" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/esm/package.json"/>
+                <FILE id="Gyjf0u" name="parse-args.d.ts" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/esm/parse-args.d.ts"/>
+                <FILE id="jowbIC" name="parse-args.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/jackspeak/dist/esm/parse-args.d.ts.map"/>
+                <FILE id="UKpGa4" name="parse-args.js" compile="0" resource="1" file="ui/node_modules/jackspeak/dist/esm/parse-args.js"/>
+                <FILE id="cN2kzS" name="parse-args.js.map" compile="0" resource="1"
+                      file="ui/node_modules/jackspeak/dist/esm/parse-args.js.map"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="es23Sb" name="LICENSE.md" compile="0" resource="1" file="ui/node_modules/jackspeak/LICENSE.md"/>
+            <FILE id="kp9Gjf" name="package.json" compile="0" resource="1" file="ui/node_modules/jackspeak/package.json"/>
+            <FILE id="feUNmj" name="README.md" compile="0" resource="1" file="ui/node_modules/jackspeak/README.md"/>
+          </GROUP>
+          <GROUP id="{D95A9BFA-2769-20FA-FDFD-50D298C0BB91}" name="lru-cache">
+            <GROUP id="{3F8476D1-CC40-E87B-4736-179BB9977424}" name="dist">
+              <GROUP id="{78196313-6FBC-FA54-3A5F-802812BC7267}" name="commonjs">
+                <FILE id="RpSefJ" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/commonjs/index.d.ts"/>
+                <FILE id="sBmkL8" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/commonjs/index.d.ts.map"/>
+                <FILE id="Ry3OIe" name="index.js" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/commonjs/index.js"/>
+                <FILE id="UiGJyz" name="index.js.map" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/commonjs/index.js.map"/>
+                <FILE id="LhtwPH" name="index.min.js" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/commonjs/index.min.js"/>
+                <FILE id="V8e7rT" name="index.min.js.map" compile="0" resource="1"
+                      file="ui/node_modules/lru-cache/dist/commonjs/index.min.js.map"/>
+                <FILE id="GRYzLk" name="package.json" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/commonjs/package.json"/>
+              </GROUP>
+              <GROUP id="{A409A666-802A-7497-7E76-67F8127DF5B7}" name="esm">
+                <FILE id="tK18lC" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/esm/index.d.ts"/>
+                <FILE id="X5DjfI" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/esm/index.d.ts.map"/>
+                <FILE id="aJCwRA" name="index.js" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/esm/index.js"/>
+                <FILE id="CzIt8M" name="index.js.map" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/esm/index.js.map"/>
+                <FILE id="ecMYGW" name="index.min.js" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/esm/index.min.js"/>
+                <FILE id="Y4IQ4U" name="index.min.js.map" compile="0" resource="1"
+                      file="ui/node_modules/lru-cache/dist/esm/index.min.js.map"/>
+                <FILE id="Xg4XBj" name="package.json" compile="0" resource="1" file="ui/node_modules/lru-cache/dist/esm/package.json"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="kakCzg" name="LICENSE" compile="0" resource="1" file="ui/node_modules/lru-cache/LICENSE"/>
+            <FILE id="ZBOXpt" name="package.json" compile="0" resource="1" file="ui/node_modules/lru-cache/package.json"/>
+            <FILE id="MOUiaK" name="README.md" compile="0" resource="1" file="ui/node_modules/lru-cache/README.md"/>
+          </GROUP>
+          <GROUP id="{F0A28BDE-82AF-027A-6522-DC37104E5379}" name="minimatch">
+            <GROUP id="{F960FA2D-9A42-B323-E7A1-324FAA619EA9}" name="dist">
+              <GROUP id="{4F113B6D-99AC-3D14-4CF1-3C070F42F350}" name="commonjs">
+                <FILE id="CyZZiP" name="assert-valid-pattern.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/commonjs/assert-valid-pattern.d.ts"/>
+                <FILE id="q8epLx" name="assert-valid-pattern.d.ts.map" compile="0"
+                      resource="1" file="ui/node_modules/minimatch/dist/commonjs/assert-valid-pattern.d.ts.map"/>
+                <FILE id="qLKise" name="assert-valid-pattern.js" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/commonjs/assert-valid-pattern.js"/>
+                <FILE id="C9KqCn" name="assert-valid-pattern.js.map" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/commonjs/assert-valid-pattern.js.map"/>
+                <FILE id="iUAFBt" name="ast.d.ts" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/ast.d.ts"/>
+                <FILE id="CcTqlk" name="ast.d.ts.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/ast.d.ts.map"/>
+                <FILE id="tjsoJM" name="ast.js" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/ast.js"/>
+                <FILE id="x5o7B9" name="ast.js.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/ast.js.map"/>
+                <FILE id="Rk8wjB" name="brace-expressions.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/commonjs/brace-expressions.d.ts"/>
+                <FILE id="hBPwxk" name="brace-expressions.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/commonjs/brace-expressions.d.ts.map"/>
+                <FILE id="QXR2zY" name="brace-expressions.js" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/commonjs/brace-expressions.js"/>
+                <FILE id="ySvEcg" name="brace-expressions.js.map" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/commonjs/brace-expressions.js.map"/>
+                <FILE id="CWkIAK" name="escape.d.ts" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/escape.d.ts"/>
+                <FILE id="JVmrOJ" name="escape.d.ts.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/escape.d.ts.map"/>
+                <FILE id="f9fFKi" name="escape.js" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/escape.js"/>
+                <FILE id="KFMrZ2" name="escape.js.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/escape.js.map"/>
+                <FILE id="wnw8U9" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/index.d.ts"/>
+                <FILE id="OaOctB" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/index.d.ts.map"/>
+                <FILE id="CjmgBv" name="index.js" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/index.js"/>
+                <FILE id="cKxGPg" name="index.js.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/index.js.map"/>
+                <FILE id="biuFdh" name="package.json" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/package.json"/>
+                <FILE id="RQykzL" name="unescape.d.ts" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/unescape.d.ts"/>
+                <FILE id="jMgMGa" name="unescape.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/commonjs/unescape.d.ts.map"/>
+                <FILE id="e9yzh4" name="unescape.js" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/unescape.js"/>
+                <FILE id="tlhS0S" name="unescape.js.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/commonjs/unescape.js.map"/>
+              </GROUP>
+              <GROUP id="{2ED59CCB-AF38-5031-1EF5-9A464A6D7925}" name="esm">
+                <FILE id="QOMis8" name="assert-valid-pattern.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/esm/assert-valid-pattern.d.ts"/>
+                <FILE id="pbpHMA" name="assert-valid-pattern.d.ts.map" compile="0"
+                      resource="1" file="ui/node_modules/minimatch/dist/esm/assert-valid-pattern.d.ts.map"/>
+                <FILE id="fs05yX" name="assert-valid-pattern.js" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/esm/assert-valid-pattern.js"/>
+                <FILE id="vf8u5y" name="assert-valid-pattern.js.map" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/esm/assert-valid-pattern.js.map"/>
+                <FILE id="MTf3qW" name="ast.d.ts" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/ast.d.ts"/>
+                <FILE id="dwykaY" name="ast.d.ts.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/ast.d.ts.map"/>
+                <FILE id="OGdxIA" name="ast.js" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/ast.js"/>
+                <FILE id="vrC2k5" name="ast.js.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/ast.js.map"/>
+                <FILE id="fDrMYj" name="brace-expressions.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/esm/brace-expressions.d.ts"/>
+                <FILE id="mokc8B" name="brace-expressions.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/esm/brace-expressions.d.ts.map"/>
+                <FILE id="Ln65AI" name="brace-expressions.js" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/esm/brace-expressions.js"/>
+                <FILE id="hX0t9c" name="brace-expressions.js.map" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/esm/brace-expressions.js.map"/>
+                <FILE id="MAZxlC" name="escape.d.ts" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/escape.d.ts"/>
+                <FILE id="CmeqI9" name="escape.d.ts.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/escape.d.ts.map"/>
+                <FILE id="bjlrU3" name="escape.js" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/escape.js"/>
+                <FILE id="tXf7gZ" name="escape.js.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/escape.js.map"/>
+                <FILE id="SjN7lL" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/index.d.ts"/>
+                <FILE id="VM6L8g" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/index.d.ts.map"/>
+                <FILE id="sMbYiO" name="index.js" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/index.js"/>
+                <FILE id="M9as5m" name="index.js.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/index.js.map"/>
+                <FILE id="f2AHL9" name="package.json" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/package.json"/>
+                <FILE id="RrKgue" name="unescape.d.ts" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/unescape.d.ts"/>
+                <FILE id="FwP7vO" name="unescape.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/minimatch/dist/esm/unescape.d.ts.map"/>
+                <FILE id="bTE9HF" name="unescape.js" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/unescape.js"/>
+                <FILE id="k5zrEW" name="unescape.js.map" compile="0" resource="1" file="ui/node_modules/minimatch/dist/esm/unescape.js.map"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="P6A6t1" name="LICENSE" compile="0" resource="1" file="ui/node_modules/minimatch/LICENSE"/>
+            <FILE id="kVSsRn" name="package.json" compile="0" resource="1" file="ui/node_modules/minimatch/package.json"/>
+            <FILE id="hoeuuD" name="README.md" compile="0" resource="1" file="ui/node_modules/minimatch/README.md"/>
+          </GROUP>
+          <GROUP id="{4912C79D-D204-41D3-F059-237F73299DDD}" name="minipass">
+            <GROUP id="{C56E7778-5A09-F078-2907-8D1D5B0A050E}" name="dist">
+              <GROUP id="{1697B5B6-6910-1CBD-EC19-5085AC802CBE}" name="commonjs">
+                <FILE id="TD9MTW" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/minipass/dist/commonjs/index.d.ts"/>
+                <FILE id="Vype6n" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/minipass/dist/commonjs/index.d.ts.map"/>
+                <FILE id="iNK4b0" name="index.js" compile="0" resource="1" file="ui/node_modules/minipass/dist/commonjs/index.js"/>
+                <FILE id="cu8Od2" name="index.js.map" compile="0" resource="1" file="ui/node_modules/minipass/dist/commonjs/index.js.map"/>
+                <FILE id="Fb2hTk" name="package.json" compile="0" resource="1" file="ui/node_modules/minipass/dist/commonjs/package.json"/>
+              </GROUP>
+              <GROUP id="{EDFED709-8891-FE99-861F-78F6B05AED95}" name="esm">
+                <FILE id="q4tVgS" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/minipass/dist/esm/index.d.ts"/>
+                <FILE id="CMls1I" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/minipass/dist/esm/index.d.ts.map"/>
+                <FILE id="bJ5jyG" name="index.js" compile="0" resource="1" file="ui/node_modules/minipass/dist/esm/index.js"/>
+                <FILE id="wPGGuG" name="index.js.map" compile="0" resource="1" file="ui/node_modules/minipass/dist/esm/index.js.map"/>
+                <FILE id="UHh7jQ" name="package.json" compile="0" resource="1" file="ui/node_modules/minipass/dist/esm/package.json"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="u02OmJ" name="LICENSE" compile="0" resource="1" file="ui/node_modules/minipass/LICENSE"/>
+            <FILE id="LWEl2B" name="package.json" compile="0" resource="1" file="ui/node_modules/minipass/package.json"/>
+            <FILE id="dWvFeP" name="README.md" compile="0" resource="1" file="ui/node_modules/minipass/README.md"/>
+          </GROUP>
+          <GROUP id="{3DC36E9C-EE9F-6488-C971-8E14D468CA17}" name="package-json-from-dist">
+            <GROUP id="{6586CE41-A89F-647F-9B96-83EE145BEA73}" name="dist">
+              <GROUP id="{ABA39B81-B213-3A1A-206C-EECFA8E7E716}" name="commonjs">
+                <FILE id="aTQTYr" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/dist/commonjs/index.d.ts"/>
+                <FILE id="Xw78RB" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/dist/commonjs/index.d.ts.map"/>
+                <FILE id="qQtQJK" name="index.js" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/dist/commonjs/index.js"/>
+                <FILE id="XXIQ7D" name="index.js.map" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/dist/commonjs/index.js.map"/>
+                <FILE id="ZOTKIs" name="package.json" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/dist/commonjs/package.json"/>
+              </GROUP>
+              <GROUP id="{281DD257-B92E-9571-6B09-F3FA58F5331E}" name="esm">
+                <FILE id="DB5i2r" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/dist/esm/index.d.ts"/>
+                <FILE id="CXVPeS" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/dist/esm/index.d.ts.map"/>
+                <FILE id="eoyXM1" name="index.js" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/dist/esm/index.js"/>
+                <FILE id="hNbHj1" name="index.js.map" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/dist/esm/index.js.map"/>
+                <FILE id="dkHyco" name="package.json" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/dist/esm/package.json"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="oMFIqC" name="LICENSE.md" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/LICENSE.md"/>
+            <FILE id="TmT8rO" name="package.json" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/package.json"/>
+            <FILE id="QhRUIL" name="README.md" compile="0" resource="1" file="ui/node_modules/package-json-from-dist/README.md"/>
+          </GROUP>
+          <GROUP id="{F4B4D5DB-F166-8DC3-ABF8-4FA1C02711AE}" name="path-key">
+            <FILE id="Y5F24a" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/path-key/index.d.ts"/>
+            <FILE id="ZEHs1T" name="index.js" compile="0" resource="1" file="ui/node_modules/path-key/index.js"/>
+            <FILE id="lXrTmQ" name="license" compile="0" resource="1" file="ui/node_modules/path-key/license"/>
+            <FILE id="knGAkO" name="package.json" compile="0" resource="1" file="ui/node_modules/path-key/package.json"/>
+            <FILE id="SUkVxd" name="readme.md" compile="0" resource="1" file="ui/node_modules/path-key/readme.md"/>
+          </GROUP>
+          <GROUP id="{88D75365-EB86-EC32-6ACA-89896DB0788E}" name="path-scurry">
+            <GROUP id="{F60ED15D-C7A1-CEFA-618B-C40888C73351}" name="dist">
+              <GROUP id="{D0DE95D5-A056-56B7-428C-5CCFCA691EA6}" name="commonjs">
+                <FILE id="ftanah" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/path-scurry/dist/commonjs/index.d.ts"/>
+                <FILE id="p3QHoc" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/path-scurry/dist/commonjs/index.d.ts.map"/>
+                <FILE id="iryTyz" name="index.js" compile="0" resource="1" file="ui/node_modules/path-scurry/dist/commonjs/index.js"/>
+                <FILE id="EDgZ48" name="index.js.map" compile="0" resource="1" file="ui/node_modules/path-scurry/dist/commonjs/index.js.map"/>
+                <FILE id="oBDdb9" name="package.json" compile="0" resource="1" file="ui/node_modules/path-scurry/dist/commonjs/package.json"/>
+              </GROUP>
+              <GROUP id="{0AFE589B-5205-16F4-73C8-2B7D9DF2326A}" name="esm">
+                <FILE id="fQue6T" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/path-scurry/dist/esm/index.d.ts"/>
+                <FILE id="YU18l8" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/path-scurry/dist/esm/index.d.ts.map"/>
+                <FILE id="zWCZqH" name="index.js" compile="0" resource="1" file="ui/node_modules/path-scurry/dist/esm/index.js"/>
+                <FILE id="wBkUtv" name="index.js.map" compile="0" resource="1" file="ui/node_modules/path-scurry/dist/esm/index.js.map"/>
+                <FILE id="IHSHLG" name="package.json" compile="0" resource="1" file="ui/node_modules/path-scurry/dist/esm/package.json"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="GQHnzB" name="LICENSE.md" compile="0" resource="1" file="ui/node_modules/path-scurry/LICENSE.md"/>
+            <FILE id="eYpPNk" name="package.json" compile="0" resource="1" file="ui/node_modules/path-scurry/package.json"/>
+            <FILE id="a0ziEe" name="README.md" compile="0" resource="1" file="ui/node_modules/path-scurry/README.md"/>
+          </GROUP>
+          <GROUP id="{38F79566-8EE4-CB1E-B2C8-ECC7D06A3694}" name="rimraf">
+            <GROUP id="{3B9079A0-7D3E-C537-0012-C135C325A5A0}" name="dist">
+              <GROUP id="{325A6361-DF28-FA0F-BC62-5B509C2A8F92}" name="commonjs">
+                <FILE id="Y4nAHr" name="default-tmp.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/default-tmp.d.ts"/>
+                <FILE id="lcrjp9" name="default-tmp.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/default-tmp.d.ts.map"/>
+                <FILE id="jhjcF0" name="default-tmp.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/default-tmp.js"/>
+                <FILE id="DvgQVz" name="default-tmp.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/default-tmp.js.map"/>
+                <FILE id="iMXSuf" name="fix-eperm.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/fix-eperm.d.ts"/>
+                <FILE id="Hr9qBP" name="fix-eperm.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/fix-eperm.d.ts.map"/>
+                <FILE id="AkPwfC" name="fix-eperm.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/fix-eperm.js"/>
+                <FILE id="rmLvnZ" name="fix-eperm.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/fix-eperm.js.map"/>
+                <FILE id="lACeTZ" name="fs.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/fs.d.ts"/>
+                <FILE id="OnB1CK" name="fs.d.ts.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/fs.d.ts.map"/>
+                <FILE id="Adhvii" name="fs.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/fs.js"/>
+                <FILE id="Pyxru2" name="fs.js.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/fs.js.map"/>
+                <FILE id="o9OrEa" name="ignore-enoent.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/ignore-enoent.d.ts"/>
+                <FILE id="uo4t1B" name="ignore-enoent.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/ignore-enoent.d.ts.map"/>
+                <FILE id="tCpO57" name="ignore-enoent.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/ignore-enoent.js"/>
+                <FILE id="dk7r3x" name="ignore-enoent.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/ignore-enoent.js.map"/>
+                <FILE id="JfbzOy" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/index.d.ts"/>
+                <FILE id="WuURzX" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/index.d.ts.map"/>
+                <FILE id="Z2PuGG" name="index.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/index.js"/>
+                <FILE id="ljGCxf" name="index.js.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/index.js.map"/>
+                <FILE id="H6vF7m" name="opt-arg.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/opt-arg.d.ts"/>
+                <FILE id="Ni7Grx" name="opt-arg.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/opt-arg.d.ts.map"/>
+                <FILE id="qgmdoG" name="opt-arg.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/opt-arg.js"/>
+                <FILE id="m4TW3u" name="opt-arg.js.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/opt-arg.js.map"/>
+                <FILE id="eDp6c1" name="package.json" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/package.json"/>
+                <FILE id="JWOohe" name="path-arg.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/path-arg.d.ts"/>
+                <FILE id="eyv5Sb" name="path-arg.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/path-arg.d.ts.map"/>
+                <FILE id="l0yYFb" name="path-arg.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/path-arg.js"/>
+                <FILE id="U4XXP2" name="path-arg.js.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/path-arg.js.map"/>
+                <FILE id="uk3iit" name="platform.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/platform.d.ts"/>
+                <FILE id="V7u5Rx" name="platform.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/platform.d.ts.map"/>
+                <FILE id="qXSQZq" name="platform.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/platform.js"/>
+                <FILE id="lAePBm" name="platform.js.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/platform.js.map"/>
+                <FILE id="NadJff" name="readdir-or-error.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/readdir-or-error.d.ts"/>
+                <FILE id="DxjF9x" name="readdir-or-error.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/readdir-or-error.d.ts.map"/>
+                <FILE id="mjHvlZ" name="readdir-or-error.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/readdir-or-error.js"/>
+                <FILE id="Jf8V4M" name="readdir-or-error.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/readdir-or-error.js.map"/>
+                <FILE id="V5JsR4" name="retry-busy.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/retry-busy.d.ts"/>
+                <FILE id="Y80sbs" name="retry-busy.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/retry-busy.d.ts.map"/>
+                <FILE id="HoYWEG" name="retry-busy.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/retry-busy.js"/>
+                <FILE id="AKXix4" name="retry-busy.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/retry-busy.js.map"/>
+                <FILE id="bpRUiY" name="rimraf-manual.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-manual.d.ts"/>
+                <FILE id="tw68t9" name="rimraf-manual.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-manual.d.ts.map"/>
+                <FILE id="iVPX5K" name="rimraf-manual.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-manual.js"/>
+                <FILE id="MejUUg" name="rimraf-manual.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-manual.js.map"/>
+                <FILE id="DA48c4" name="rimraf-move-remove.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-move-remove.d.ts"/>
+                <FILE id="ZseOA5" name="rimraf-move-remove.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-move-remove.d.ts.map"/>
+                <FILE id="mKv0yl" name="rimraf-move-remove.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-move-remove.js"/>
+                <FILE id="Oj4pZc" name="rimraf-move-remove.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-move-remove.js.map"/>
+                <FILE id="kaAigH" name="rimraf-native.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-native.d.ts"/>
+                <FILE id="ih4l75" name="rimraf-native.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-native.d.ts.map"/>
+                <FILE id="m7F6fg" name="rimraf-native.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-native.js"/>
+                <FILE id="MVsInA" name="rimraf-native.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-native.js.map"/>
+                <FILE id="YsvS6U" name="rimraf-posix.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-posix.d.ts"/>
+                <FILE id="TGzHiB" name="rimraf-posix.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-posix.d.ts.map"/>
+                <FILE id="gdg7Ho" name="rimraf-posix.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/rimraf-posix.js"/>
+                <FILE id="YlQRJu" name="rimraf-posix.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-posix.js.map"/>
+                <FILE id="G6VZaS" name="rimraf-windows.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-windows.d.ts"/>
+                <FILE id="WSLrqi" name="rimraf-windows.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-windows.d.ts.map"/>
+                <FILE id="Zn0HTx" name="rimraf-windows.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-windows.js"/>
+                <FILE id="WsGJ7N" name="rimraf-windows.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/rimraf-windows.js.map"/>
+                <FILE id="oL2ans" name="use-native.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/use-native.d.ts"/>
+                <FILE id="MQihx1" name="use-native.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/use-native.d.ts.map"/>
+                <FILE id="M4XUgv" name="use-native.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/commonjs/use-native.js"/>
+                <FILE id="tpE4bx" name="use-native.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/commonjs/use-native.js.map"/>
+              </GROUP>
+              <GROUP id="{8C57E1CE-365F-DF3D-C79B-7D775041BFB6}" name="esm">
+                <FILE id="GZMfbV" name="bin.d.mts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/bin.d.mts"/>
+                <FILE id="r0YJR0" name="bin.d.mts.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/bin.d.mts.map"/>
+                <FILE id="gpUmV1" name="bin.mjs" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/bin.mjs"/>
+                <FILE id="mMz8yu" name="bin.mjs.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/bin.mjs.map"/>
+                <FILE id="ILIxAj" name="default-tmp.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/default-tmp.d.ts"/>
+                <FILE id="xmsou9" name="default-tmp.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/default-tmp.d.ts.map"/>
+                <FILE id="NvIYFT" name="default-tmp.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/default-tmp.js"/>
+                <FILE id="WHc91x" name="default-tmp.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/default-tmp.js.map"/>
+                <FILE id="dUCeT1" name="fix-eperm.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/fix-eperm.d.ts"/>
+                <FILE id="HnQU3A" name="fix-eperm.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/fix-eperm.d.ts.map"/>
+                <FILE id="UDEcv8" name="fix-eperm.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/fix-eperm.js"/>
+                <FILE id="d7wNIH" name="fix-eperm.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/fix-eperm.js.map"/>
+                <FILE id="KSZUYG" name="fs.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/fs.d.ts"/>
+                <FILE id="j6PVWe" name="fs.d.ts.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/fs.d.ts.map"/>
+                <FILE id="H3E69w" name="fs.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/fs.js"/>
+                <FILE id="wwXCKU" name="fs.js.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/fs.js.map"/>
+                <FILE id="RLqw3F" name="ignore-enoent.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/ignore-enoent.d.ts"/>
+                <FILE id="vngDcI" name="ignore-enoent.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/ignore-enoent.d.ts.map"/>
+                <FILE id="dfLHqv" name="ignore-enoent.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/ignore-enoent.js"/>
+                <FILE id="x8uoRw" name="ignore-enoent.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/ignore-enoent.js.map"/>
+                <FILE id="CAxmu5" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/index.d.ts"/>
+                <FILE id="Xmn43l" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/index.d.ts.map"/>
+                <FILE id="ETgFPl" name="index.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/index.js"/>
+                <FILE id="bKQV8o" name="index.js.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/index.js.map"/>
+                <FILE id="v8oaX7" name="opt-arg.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/opt-arg.d.ts"/>
+                <FILE id="oeY58D" name="opt-arg.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/opt-arg.d.ts.map"/>
+                <FILE id="nnGWVo" name="opt-arg.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/opt-arg.js"/>
+                <FILE id="grbM1Q" name="opt-arg.js.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/opt-arg.js.map"/>
+                <FILE id="YFw32T" name="package.json" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/package.json"/>
+                <FILE id="C8HrHk" name="path-arg.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/path-arg.d.ts"/>
+                <FILE id="ayfN97" name="path-arg.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/path-arg.d.ts.map"/>
+                <FILE id="TMHGqy" name="path-arg.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/path-arg.js"/>
+                <FILE id="Hxdoe7" name="path-arg.js.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/path-arg.js.map"/>
+                <FILE id="RyRufU" name="platform.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/platform.d.ts"/>
+                <FILE id="hS2Bwb" name="platform.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/platform.d.ts.map"/>
+                <FILE id="PVNe58" name="platform.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/platform.js"/>
+                <FILE id="vbgR0D" name="platform.js.map" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/platform.js.map"/>
+                <FILE id="XBYGbp" name="readdir-or-error.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/readdir-or-error.d.ts"/>
+                <FILE id="Q2nC3e" name="readdir-or-error.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/readdir-or-error.d.ts.map"/>
+                <FILE id="ukXZXV" name="readdir-or-error.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/readdir-or-error.js"/>
+                <FILE id="WUuMhx" name="readdir-or-error.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/readdir-or-error.js.map"/>
+                <FILE id="yr1jPz" name="retry-busy.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/retry-busy.d.ts"/>
+                <FILE id="fruWt3" name="retry-busy.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/retry-busy.d.ts.map"/>
+                <FILE id="aDjBVN" name="retry-busy.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/retry-busy.js"/>
+                <FILE id="wVS4jh" name="retry-busy.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/retry-busy.js.map"/>
+                <FILE id="h0t25P" name="rimraf-manual.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-manual.d.ts"/>
+                <FILE id="UDQ00D" name="rimraf-manual.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-manual.d.ts.map"/>
+                <FILE id="tbB86U" name="rimraf-manual.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-manual.js"/>
+                <FILE id="nHnMXc" name="rimraf-manual.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-manual.js.map"/>
+                <FILE id="OhLfZV" name="rimraf-move-remove.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-move-remove.d.ts"/>
+                <FILE id="MT1ZOB" name="rimraf-move-remove.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-move-remove.d.ts.map"/>
+                <FILE id="K7pRmP" name="rimraf-move-remove.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-move-remove.js"/>
+                <FILE id="rMazUE" name="rimraf-move-remove.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-move-remove.js.map"/>
+                <FILE id="ClCiVS" name="rimraf-native.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-native.d.ts"/>
+                <FILE id="SHDJf4" name="rimraf-native.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-native.d.ts.map"/>
+                <FILE id="Sgly6Q" name="rimraf-native.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-native.js"/>
+                <FILE id="GHKjyf" name="rimraf-native.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-native.js.map"/>
+                <FILE id="gJZcIy" name="rimraf-posix.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-posix.d.ts"/>
+                <FILE id="iZJCWQ" name="rimraf-posix.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-posix.d.ts.map"/>
+                <FILE id="kk6PKq" name="rimraf-posix.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/rimraf-posix.js"/>
+                <FILE id="HrQWRu" name="rimraf-posix.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-posix.js.map"/>
+                <FILE id="Glg7z6" name="rimraf-windows.d.ts" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-windows.d.ts"/>
+                <FILE id="G9WKz1" name="rimraf-windows.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-windows.d.ts.map"/>
+                <FILE id="l8dxLF" name="rimraf-windows.js" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-windows.js"/>
+                <FILE id="Wd7m60" name="rimraf-windows.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/rimraf-windows.js.map"/>
+                <FILE id="vhd8G6" name="use-native.d.ts" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/use-native.d.ts"/>
+                <FILE id="CmIjsT" name="use-native.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/use-native.d.ts.map"/>
+                <FILE id="kXJmT9" name="use-native.js" compile="0" resource="1" file="ui/node_modules/rimraf/dist/esm/use-native.js"/>
+                <FILE id="i2W6zv" name="use-native.js.map" compile="0" resource="1"
+                      file="ui/node_modules/rimraf/dist/esm/use-native.js.map"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="qmy7ii" name="LICENSE" compile="0" resource="1" file="ui/node_modules/rimraf/LICENSE"/>
+            <FILE id="A4Nhyv" name="package.json" compile="0" resource="1" file="ui/node_modules/rimraf/package.json"/>
+            <FILE id="P0L6p7" name="README.md" compile="0" resource="1" file="ui/node_modules/rimraf/README.md"/>
+          </GROUP>
+          <GROUP id="{3B92B0F9-8B43-7FC2-5CD1-67772A3B1D52}" name="shebang-command">
+            <FILE id="Sqk1ki" name="index.js" compile="0" resource="1" file="ui/node_modules/shebang-command/index.js"/>
+            <FILE id="r8uD4d" name="license" compile="0" resource="1" file="ui/node_modules/shebang-command/license"/>
+            <FILE id="kahnQz" name="package.json" compile="0" resource="1" file="ui/node_modules/shebang-command/package.json"/>
+            <FILE id="KzlYQt" name="readme.md" compile="0" resource="1" file="ui/node_modules/shebang-command/readme.md"/>
+          </GROUP>
+          <GROUP id="{1835E89E-FAC6-E509-3558-F81A865A96AB}" name="shebang-regex">
+            <FILE id="P1nLhn" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/shebang-regex/index.d.ts"/>
+            <FILE id="GqZYdG" name="index.js" compile="0" resource="1" file="ui/node_modules/shebang-regex/index.js"/>
+            <FILE id="CwIk1d" name="license" compile="0" resource="1" file="ui/node_modules/shebang-regex/license"/>
+            <FILE id="N37HGE" name="package.json" compile="0" resource="1" file="ui/node_modules/shebang-regex/package.json"/>
+            <FILE id="qK72M4" name="readme.md" compile="0" resource="1" file="ui/node_modules/shebang-regex/readme.md"/>
+          </GROUP>
+          <GROUP id="{F807616F-19C8-E7B7-5214-60F8528D97C2}" name="signal-exit">
+            <GROUP id="{3981DD79-6CE6-1934-C1FD-95AB33BBD3EA}" name="dist">
+              <GROUP id="{FD849D6C-15E5-AC64-2A95-26046B2E0793}" name="cjs">
+                <FILE id="AiHTT1" name="browser.d.ts" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/browser.d.ts"/>
+                <FILE id="DYw2JZ" name="browser.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/signal-exit/dist/cjs/browser.d.ts.map"/>
+                <FILE id="TzCL7i" name="browser.js" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/browser.js"/>
+                <FILE id="olZ9Ux" name="browser.js.map" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/browser.js.map"/>
+                <FILE id="tU5hqK" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/index.d.ts"/>
+                <FILE id="XmLlk6" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/index.d.ts.map"/>
+                <FILE id="PgmNlJ" name="index.js" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/index.js"/>
+                <FILE id="PdbH1q" name="index.js.map" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/index.js.map"/>
+                <FILE id="SCV7e6" name="package.json" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/package.json"/>
+                <FILE id="KL3lPw" name="signals.d.ts" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/signals.d.ts"/>
+                <FILE id="ecxLDB" name="signals.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/signal-exit/dist/cjs/signals.d.ts.map"/>
+                <FILE id="KaSTt0" name="signals.js" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/signals.js"/>
+                <FILE id="eeq8Pa" name="signals.js.map" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/cjs/signals.js.map"/>
+              </GROUP>
+              <GROUP id="{CE97597C-8797-121E-A128-9124CBF1891A}" name="mjs">
+                <FILE id="qSPi67" name="browser.d.ts" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/browser.d.ts"/>
+                <FILE id="TjHvOi" name="browser.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/signal-exit/dist/mjs/browser.d.ts.map"/>
+                <FILE id="r2fBgF" name="browser.js" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/browser.js"/>
+                <FILE id="l25TIP" name="browser.js.map" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/browser.js.map"/>
+                <FILE id="m0v3qI" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/index.d.ts"/>
+                <FILE id="VkiZLh" name="index.d.ts.map" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/index.d.ts.map"/>
+                <FILE id="dXCoEC" name="index.js" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/index.js"/>
+                <FILE id="NM19vU" name="index.js.map" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/index.js.map"/>
+                <FILE id="ct0Cli" name="package.json" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/package.json"/>
+                <FILE id="R4Su9O" name="signals.d.ts" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/signals.d.ts"/>
+                <FILE id="Lva2vy" name="signals.d.ts.map" compile="0" resource="1"
+                      file="ui/node_modules/signal-exit/dist/mjs/signals.d.ts.map"/>
+                <FILE id="VzfSmV" name="signals.js" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/signals.js"/>
+                <FILE id="Yfb6kV" name="signals.js.map" compile="0" resource="1" file="ui/node_modules/signal-exit/dist/mjs/signals.js.map"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="frer7T" name="LICENSE.txt" compile="0" resource="1" file="ui/node_modules/signal-exit/LICENSE.txt"/>
+            <FILE id="rUQw02" name="package.json" compile="0" resource="1" file="ui/node_modules/signal-exit/package.json"/>
+            <FILE id="TspqQy" name="README.md" compile="0" resource="1" file="ui/node_modules/signal-exit/README.md"/>
+          </GROUP>
+          <GROUP id="{46E60390-D053-9AB2-8BB2-FC98C2FD55A2}" name="string-width">
+            <FILE id="mDhxfo" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/string-width/index.d.ts"/>
+            <FILE id="pCpP3T" name="index.js" compile="0" resource="1" file="ui/node_modules/string-width/index.js"/>
+            <FILE id="Uz821Q" name="license" compile="0" resource="1" file="ui/node_modules/string-width/license"/>
+            <FILE id="Xaqvre" name="package.json" compile="0" resource="1" file="ui/node_modules/string-width/package.json"/>
+            <FILE id="TvZbHG" name="readme.md" compile="0" resource="1" file="ui/node_modules/string-width/readme.md"/>
+          </GROUP>
+          <GROUP id="{011779C8-6035-387B-3EE4-AE736621FF38}" name="string-width-cjs">
+            <GROUP id="{D5467373-CC6F-5B91-F187-E7B34F7436EF}" name="node_modules">
+              <GROUP id="{C17B587B-351E-0D55-E666-070A747D1566}" name="ansi-regex">
+                <FILE id="kevLPV" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/ansi-regex/index.d.ts"/>
+                <FILE id="CxZym0" name="index.js" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/ansi-regex/index.js"/>
+                <FILE id="vffniN" name="license" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/ansi-regex/license"/>
+                <FILE id="EQnuw0" name="package.json" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/ansi-regex/package.json"/>
+                <FILE id="d0zObF" name="readme.md" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/ansi-regex/readme.md"/>
+              </GROUP>
+              <GROUP id="{2F5E0644-2E12-955B-A23E-5562547184B6}" name="emoji-regex">
+                <GROUP id="{BC62A41F-35D5-3AC3-D475-26DD588AE5FF}" name="es2015">
+                  <FILE id="kj7H6g" name="index.js" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/emoji-regex/es2015/index.js"/>
+                  <FILE id="h4uSYy" name="text.js" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/emoji-regex/es2015/text.js"/>
+                </GROUP>
+                <FILE id="KlS8EF" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/emoji-regex/index.d.ts"/>
+                <FILE id="OwXAVH" name="index.js" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/emoji-regex/index.js"/>
+                <FILE id="y2eF8B" name="LICENSE-MIT.txt" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/emoji-regex/LICENSE-MIT.txt"/>
+                <FILE id="sCwVkE" name="package.json" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/emoji-regex/package.json"/>
+                <FILE id="Erg62n" name="README.md" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/emoji-regex/README.md"/>
+                <FILE id="BkSnPj" name="text.js" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/emoji-regex/text.js"/>
+              </GROUP>
+              <GROUP id="{8157A568-0F1E-71E6-EF8E-7661B5689278}" name="strip-ansi">
+                <FILE id="ZkQTXa" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/strip-ansi/index.d.ts"/>
+                <FILE id="nJocAJ" name="index.js" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/strip-ansi/index.js"/>
+                <FILE id="ZYXPCE" name="license" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/strip-ansi/license"/>
+                <FILE id="n0MfGy" name="package.json" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/strip-ansi/package.json"/>
+                <FILE id="vnAaHZ" name="readme.md" compile="0" resource="1" file="ui/node_modules/string-width-cjs/node_modules/strip-ansi/readme.md"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="TAouTu" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/string-width-cjs/index.d.ts"/>
+            <FILE id="NCWigh" name="index.js" compile="0" resource="1" file="ui/node_modules/string-width-cjs/index.js"/>
+            <FILE id="Apa9HG" name="license" compile="0" resource="1" file="ui/node_modules/string-width-cjs/license"/>
+            <FILE id="ulmI09" name="package.json" compile="0" resource="1" file="ui/node_modules/string-width-cjs/package.json"/>
+            <FILE id="DCENoT" name="readme.md" compile="0" resource="1" file="ui/node_modules/string-width-cjs/readme.md"/>
+          </GROUP>
+          <GROUP id="{9809F77E-B0EF-8033-E0F5-62F4E1FDBA66}" name="strip-ansi">
+            <FILE id="RIcU7Y" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/strip-ansi/index.d.ts"/>
+            <FILE id="EnQMXj" name="index.js" compile="0" resource="1" file="ui/node_modules/strip-ansi/index.js"/>
+            <FILE id="fBjNOj" name="license" compile="0" resource="1" file="ui/node_modules/strip-ansi/license"/>
+            <FILE id="HFnOls" name="package.json" compile="0" resource="1" file="ui/node_modules/strip-ansi/package.json"/>
+            <FILE id="JLWd6a" name="readme.md" compile="0" resource="1" file="ui/node_modules/strip-ansi/readme.md"/>
+          </GROUP>
+          <GROUP id="{5214FDE0-8335-BC61-C090-A88A63939360}" name="strip-ansi-cjs">
+            <GROUP id="{F56315DE-B384-DE07-EF2F-6430C6B78040}" name="node_modules">
+              <GROUP id="{BDBE24A0-F75F-B5BA-9B14-073CC980260C}" name="ansi-regex">
+                <FILE id="oNxhau" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/strip-ansi-cjs/node_modules/ansi-regex/index.d.ts"/>
+                <FILE id="fTHBqK" name="index.js" compile="0" resource="1" file="ui/node_modules/strip-ansi-cjs/node_modules/ansi-regex/index.js"/>
+                <FILE id="aGf4GL" name="license" compile="0" resource="1" file="ui/node_modules/strip-ansi-cjs/node_modules/ansi-regex/license"/>
+                <FILE id="BqQWHn" name="package.json" compile="0" resource="1" file="ui/node_modules/strip-ansi-cjs/node_modules/ansi-regex/package.json"/>
+                <FILE id="nq59pM" name="readme.md" compile="0" resource="1" file="ui/node_modules/strip-ansi-cjs/node_modules/ansi-regex/readme.md"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="jUNWs4" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/strip-ansi-cjs/index.d.ts"/>
+            <FILE id="D2HYww" name="index.js" compile="0" resource="1" file="ui/node_modules/strip-ansi-cjs/index.js"/>
+            <FILE id="MYdxk6" name="license" compile="0" resource="1" file="ui/node_modules/strip-ansi-cjs/license"/>
+            <FILE id="RWm9Gl" name="package.json" compile="0" resource="1" file="ui/node_modules/strip-ansi-cjs/package.json"/>
+            <FILE id="fzw30L" name="readme.md" compile="0" resource="1" file="ui/node_modules/strip-ansi-cjs/readme.md"/>
+          </GROUP>
+          <GROUP id="{B3737759-85D5-C1F6-D6C6-A14D3DB5923D}" name="which">
+            <GROUP id="{73D7FB0A-981E-05FA-F2FE-538A847B98F0}" name="bin">
+              <FILE id="arucfw" name="node-which" compile="0" resource="1" file="ui/node_modules/which/bin/node-which"/>
+            </GROUP>
+            <FILE id="yqP1Ac" name="CHANGELOG.md" compile="0" resource="1" file="ui/node_modules/which/CHANGELOG.md"/>
+            <FILE id="U0tkUA" name="LICENSE" compile="0" resource="1" file="ui/node_modules/which/LICENSE"/>
+            <FILE id="dj9Qig" name="package.json" compile="0" resource="1" file="ui/node_modules/which/package.json"/>
+            <FILE id="eQa4yr" name="README.md" compile="0" resource="1" file="ui/node_modules/which/README.md"/>
+            <FILE id="FDARgk" name="which.js" compile="0" resource="1" file="ui/node_modules/which/which.js"/>
+          </GROUP>
+          <GROUP id="{A8E9DAC8-DCC0-E4CC-4228-11681961B247}" name="wrap-ansi">
+            <FILE id="FqrFQO" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/wrap-ansi/index.d.ts"/>
+            <FILE id="J7mgjn" name="index.js" compile="0" resource="1" file="ui/node_modules/wrap-ansi/index.js"/>
+            <FILE id="mbZH9O" name="license" compile="0" resource="1" file="ui/node_modules/wrap-ansi/license"/>
+            <FILE id="IQHl1r" name="package.json" compile="0" resource="1" file="ui/node_modules/wrap-ansi/package.json"/>
+            <FILE id="RHAHaq" name="readme.md" compile="0" resource="1" file="ui/node_modules/wrap-ansi/readme.md"/>
+          </GROUP>
+          <GROUP id="{3EBC98B2-0942-CF91-E0ED-3C42A9FD0AA3}" name="wrap-ansi-cjs">
+            <GROUP id="{38981249-8D3A-D850-FDC0-B9BE8F270051}" name="node_modules">
+              <GROUP id="{76C1BB02-522C-9014-1AD7-C251E2E6A0A4}" name="ansi-regex">
+                <FILE id="OBcu8H" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/ansi-regex/index.d.ts"/>
+                <FILE id="DPjSVq" name="index.js" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/ansi-regex/index.js"/>
+                <FILE id="H0OzLb" name="license" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/ansi-regex/license"/>
+                <FILE id="lh6ZsT" name="package.json" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/ansi-regex/package.json"/>
+                <FILE id="Save8K" name="readme.md" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/ansi-regex/readme.md"/>
+              </GROUP>
+              <GROUP id="{480EF5A3-5664-583D-A578-66999BD99C3F}" name="ansi-styles">
+                <FILE id="jo2Sem" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/ansi-styles/index.d.ts"/>
+                <FILE id="zuTxF3" name="index.js" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/ansi-styles/index.js"/>
+                <FILE id="yGGVHa" name="license" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/ansi-styles/license"/>
+                <FILE id="fTa7l7" name="package.json" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/ansi-styles/package.json"/>
+                <FILE id="KNNKHF" name="readme.md" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/ansi-styles/readme.md"/>
+              </GROUP>
+              <GROUP id="{78391A96-67AD-F8A5-9635-33D6E12DB9AE}" name="emoji-regex">
+                <GROUP id="{AC5D2C18-E813-038A-F3D9-C3E4204C31DF}" name="es2015">
+                  <FILE id="UqXjFM" name="index.js" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/emoji-regex/es2015/index.js"/>
+                  <FILE id="DyVEDS" name="text.js" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/emoji-regex/es2015/text.js"/>
+                </GROUP>
+                <FILE id="JTDWvm" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/emoji-regex/index.d.ts"/>
+                <FILE id="INO9ZC" name="index.js" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/emoji-regex/index.js"/>
+                <FILE id="ZpojcA" name="LICENSE-MIT.txt" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/emoji-regex/LICENSE-MIT.txt"/>
+                <FILE id="inbbDU" name="package.json" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/emoji-regex/package.json"/>
+                <FILE id="B12rvE" name="README.md" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/emoji-regex/README.md"/>
+                <FILE id="NwamTZ" name="text.js" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/emoji-regex/text.js"/>
+              </GROUP>
+              <GROUP id="{6362AA64-38AE-5DB6-C6FA-99EB9B333222}" name="string-width">
+                <FILE id="Al4Cdc" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/string-width/index.d.ts"/>
+                <FILE id="aGph2F" name="index.js" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/string-width/index.js"/>
+                <FILE id="Wc1LlM" name="license" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/string-width/license"/>
+                <FILE id="HfVUkp" name="package.json" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/string-width/package.json"/>
+                <FILE id="csCJCL" name="readme.md" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/string-width/readme.md"/>
+              </GROUP>
+              <GROUP id="{3617E007-5454-9E78-0A49-A59A1B1585CD}" name="strip-ansi">
+                <FILE id="LbBZUC" name="index.d.ts" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/strip-ansi/index.d.ts"/>
+                <FILE id="KQu7J6" name="index.js" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/strip-ansi/index.js"/>
+                <FILE id="PV1voR" name="license" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/strip-ansi/license"/>
+                <FILE id="LHxVbT" name="package.json" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/strip-ansi/package.json"/>
+                <FILE id="d35uCB" name="readme.md" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/node_modules/strip-ansi/readme.md"/>
+              </GROUP>
+            </GROUP>
+            <FILE id="K6cW1c" name="index.js" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/index.js"/>
+            <FILE id="PwP7ZI" name="license" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/license"/>
+            <FILE id="it3fJx" name="package.json" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/package.json"/>
+            <FILE id="ynkrnU" name="readme.md" compile="0" resource="1" file="ui/node_modules/wrap-ansi-cjs/readme.md"/>
+          </GROUP>
+        </GROUP>
+        <FILE id="SgEwC9" name="package-lock.json" compile="0" resource="1"
+              file="ui/package-lock.json"/>
+        <FILE id="EDgDCN" name="package.json" compile="0" resource="1" file="ui/package.json"/>
+      </GROUP>
+      <FILE id="tbgbNe" name="GranularSound.h" compile="0" resource="0" file="Source/Synth/GranularSound.h"/>
+      <FILE id="DtO4ue" name="GranularVoice.cpp" compile="1" resource="0"
+            file="Source/Synth/GranularVoice.cpp"/>
+      <FILE id="V5fOWZ" name="GranularVoice.h" compile="0" resource="0" file="Source/Synth/GranularVoice.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors_headless" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
+  <EXPORTFORMATS>
+    <VS2022 targetFolder="Builds/VisualStudio2022">
+      <CONFIGURATIONS>
+                        <CONFIGURATION isDebug="1" name="Debug" targetName="EchoGrainSynth" winArchitecture="Win32,x64">
+          <POSTBUILD_COMMAND/>
+        </CONFIGURATION>
+        <CONFIGURATION isDebug="0" name="Release" targetName="EchoGrainSynth" winArchitecture="Win32,x64">
+          <POSTBUILD_COMMAND/>
+        </CONFIGURATION>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_processors_headless" path="../../../../JUCE/modules"/>
+      </MODULEPATHS>
+    </VS2022>
+  </EXPORTFORMATS>
+</JUCERPROJECT>

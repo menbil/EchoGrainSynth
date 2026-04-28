@@ -1,0 +1,43 @@
+# JUCE/Audio Plugin
+Builds/
+JuceLibraryCode/
+*.sln
+*.vcxproj*
+*.user
+*.opensdf
+*.sdf
+*.db
+*.ipch
+*.exe
+*.dll
+*.pdb
+*.app
+*.dSYM/
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
+*.DS_Store
+*.vs/
+*.vscode/
+
+# Node/JS
+ui/node_modules/
+ui/package-lock.json
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Others
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.swn
+*.orig
+*.rej
+
+# Ignore local test files
+*.local.js
+*.local.json
