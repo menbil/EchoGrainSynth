@@ -170,11 +170,14 @@ void GrainEngine::spawnGrain()
     grain.grainSize = static_cast<int>((grainSize / 1000.0f) * static_cast<float>(sampleRate));
     grain.grainSize = juce::jlimit(10, sampleBuffer.getNumSamples(), grain.grainSize);
     
-    // Calculate start position with spread
-    float posSpread = (uniformDist(gen) - 0.5f) * positionSpread * 2.0f;
-    float actualPosition = juce::jlimit(0.0f, 1.0f, playbackPosition + posSpread);
-    grain.startPos = static_cast<int>(actualPosition * static_cast<float>(sampleBuffer.getNumSamples() - grain.grainSize));
-    grain.startPos = juce::jlimit(0, sampleBuffer.getNumSamples() - grain.grainSize, grain.startPos);
+    // Calculate start position with spread, clamped to user-defined sample range
+    const float rangeLen  = sampleRangeEnd - sampleRangeStart;
+    float posSpread       = (uniformDist(gen) - 0.5f) * positionSpread * rangeLen * 2.0f;
+    float posInRange      = sampleRangeStart + playbackPosition * rangeLen;
+    float actualPosition  = juce::jlimit(sampleRangeStart, sampleRangeEnd, posInRange + posSpread);
+    const int totalUsable = sampleBuffer.getNumSamples() - grain.grainSize;
+    grain.startPos = static_cast<int>(actualPosition * static_cast<float>(totalUsable));
+    grain.startPos = juce::jlimit(0, juce::jmax(0, totalUsable), grain.startPos);
     
     // Set pitch with spread AND MIDI pitch ratio
     float pitchSpreadAmount = (uniformDist(gen) - 0.5f) * pitchSpread;
@@ -196,25 +199,11 @@ void GrainEngine::spawnGrain()
 
 float GrainEngine::calculateEnvelope(const Grain& grain) const
 {
-    float attackSamples = (adsrAttack / 1000.0f) * static_cast<float>(sampleRate);
-    float releaseSamples = (adsrRelease / 1000.0f) * static_cast<float>(sampleRate);
-    
-    if (static_cast<float>(grain.age) < attackSamples)
-    {
-        // Attack phase
-        return static_cast<float>(grain.age) / attackSamples;
-    }
-    else if (static_cast<float>(grain.position) > static_cast<float>(grain.grainSize) - releaseSamples)
-    {
-        // Release phase
-        float releaseProgress = (static_cast<float>(grain.grainSize) - static_cast<float>(grain.position)) / releaseSamples;
-        return releaseProgress;
-    }
-    else
-    {
-        // Sustain phase
-        return 1.0f;
-    }
+    if (grain.grainSize <= 0) return 0.0f;
+    const float t = juce::jlimit(0.0f, 1.0f,
+        static_cast<float>(grain.position) / static_cast<float>(grain.grainSize));
+    // Fenêtre de Hann : évite les clics aux bords
+    return 0.5f * (1.0f - std::cos(juce::MathConstants<float>::twoPi * t));
 }
 
 void GrainEngine::updateGrainTimer(int numSamples)

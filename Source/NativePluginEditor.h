@@ -7,7 +7,6 @@
 #include "LfoMonitorComponent.h"
 #include "XYPadComponent.h"
 #include "XYPadMappingPanel.h"
-#include "ActiveGrainsDisplay.h"
 #include "PresetManager.h"
 #include "lookandfeel/EchoGrainLookAndFeel.h"
 
@@ -136,6 +135,10 @@ private:
     // Master Gain
     juce::Slider masterGainSlider;
     juce::Label masterGainLabel;
+
+    // Glitch
+    juce::Slider glitchIntensitySlider, glitchRateSlider;
+    juce::Label glitchIntensityLabel, glitchRateLabel;
     
     // === COLUMN 4: VERT - XY Pad + Mapping ===
     juce::GroupComponent xyGroup;
@@ -152,9 +155,6 @@ private:
     juce::Slider rootNoteSlider, fineTuneSlider, pitchBendRangeSlider;
     juce::Label rootNoteLabel, fineTuneLabel, pitchBendRangeLabel;
     
-    // === FOOTER ===
-    std::unique_ptr<ActiveGrainsDisplay> activeGrainsDisplay;
-
     // Per-section reset actions
     juce::TextButton resetGranularButton;
     juce::TextButton resetAdsrButton;
@@ -185,8 +185,8 @@ private:
     static constexpr int MIN_HEIGHT = 600;
     static constexpr int DEFAULT_WIDTH = 1200;
     static constexpr int DEFAULT_HEIGHT = 700;
-    static constexpr int HEADER_HEIGHT = 178;
-    static constexpr int FOOTER_HEIGHT = 112;
+    static constexpr int HEADER_HEIGHT = 248;
+    static constexpr int FOOTER_HEIGHT = 0;
     static constexpr int MARGIN = 8;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NativePluginEditor)

@@ -2,7 +2,8 @@
   ==============================================================================
 
     WaveformView.h
-    Waveform display with playhead and zoom controls
+    Waveform display with grain visualization overlay and Simpler-style
+    sample markers (start / end, draggable).
 
   ==============================================================================
 */
@@ -10,16 +11,12 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "GrainEngine.h"   // GrainVisualizationPoint, Grain
+
+// Forward declaration — full type available in .cpp via PluginProcessor.h
+class EchoGrainSynthAudioProcessor;
 
 //==============================================================================
-// Structure pour visualiser les grains sur la waveform
-struct GrainRegion {
-  float startNorm = 0.0f; // Position de départ normalisée (0..1)
-  float endNorm = 0.0f;   // Position de fin normalisée (0..1)
-  float energy = 1.0f;    // Pour alpha/couleur
-  bool reverse = false;
-};
-
 class WaveformView : public juce::Component,
                      public juce::Timer,
                      public juce::ChangeListener
@@ -27,39 +24,109 @@ class WaveformView : public juce::Component,
 public:
     WaveformView();
     ~WaveformView() override;
-  // Permet d'injecter les grains actifs à afficher
-  void setActiveGrainRegions(const std::vector<GrainRegion>& regions);
 
-    void paint(juce::Graphics& g) override;
-    void resized() override;
-    
-    void timerCallback() override;
-    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
-    
+    //==========================================================================
+    // Processor connection — enables internal grain-data polling
+    void setProcessor(EchoGrainSynthAudioProcessor* p);
+
+    // Waveform source
     void setSource(juce::InputSource* newSource);
+
+    // Positions (0..1 normalised)
     void setPlayheadPosition(double position);
-    
+    void setGrainSeedPosition(float normPos);   // yellow dashed cursor
+
+    // Zoom
     void zoomIn();
     void zoomOut();
     void fitToView();
-    
-    double getPlayheadPosition() const { return playheadPosition; }
+
+    // Accessors
+    double getPlayheadPosition() const  { return playheadPosition; }
+    float  getSampleStartNorm()  const  { return sampleStartNorm; }
+    float  getSampleEndNorm()    const  { return sampleEndNorm; }
+
+    // Programmatic update of both markers (e.g. from preset load)
+    void setSampleRange(float startNorm, float endNorm)
+    {
+        sampleStartNorm = juce::jlimit(0.0f, 1.0f, startNorm);
+        sampleEndNorm   = juce::jlimit(sampleStartNorm + 0.01f, 1.0f, endNorm);
+        repaint();
+    }
+
+    // Callbacks fired when the user drags the start / end markers
+    std::function<void(float)> onStartMarkerChanged;
+    std::function<void(float)> onEndMarkerChanged;
+    std::function<void(float)> onPositionChanged;   // drag de la barre jaune
+
+    //==========================================================================
+    void paint   (juce::Graphics& g)  override;
+    void resized ()                    override;
+
+    void mouseDown (const juce::MouseEvent& e) override;
+    void mouseDrag (const juce::MouseEvent& e) override;
+    void mouseUp   (const juce::MouseEvent& e) override;
+    void mouseMove (const juce::MouseEvent& e) override;
+    void mouseWheelMove  (const juce::MouseEvent& e,
+                          const juce::MouseWheelDetails& wheel) override;
+
+    void timerCallback()                                              override;
+    void changeListenerCallback(juce::ChangeBroadcaster* source)      override;
 
 private:
-    juce::AudioFormatManager formatManager;
-    juce::AudioThumbnailCache thumbnailCache { 10 };
+    //── Waveform ──────────────────────────────────────────────────────────────
+    juce::AudioFormatManager     formatManager;
+    juce::AudioThumbnailCache    thumbnailCache { 10 };
     std::unique_ptr<juce::AudioThumbnail> thumbnail;
-      std::vector<GrainRegion> activeGrainRegions;
-    
-    double playheadPosition = 0.0;
-    double zoomFactor = 1.0;
-    double viewStart = 0.0;
-    
-    bool hasValidSource = false;
-    
-    void drawWaveform(juce::Graphics& g, juce::Rectangle<int> bounds);
-    void drawPlayhead(juce::Graphics& g, juce::Rectangle<int> bounds);
-    void drawGrid(juce::Graphics& g, juce::Rectangle<int> bounds);
-    
+
+    double playheadPosition  = 0.0;
+    float  grainSeedPosition = 0.0f;
+    double zoomFactor        = 1.0;
+    double viewStart         = 0.0;
+    bool   hasValidSource    = false;
+
+    //── Grain visualization ───────────────────────────────────────────────────
+    EchoGrainSynthAudioProcessor* processor = nullptr;
+
+    static constexpr int   HISTORY_SIZE    = 120;
+    static constexpr int   MAX_GRAIN_SLOTS = 64;
+    static constexpr float GRAIN_SMOOTHING = 0.85f;
+
+    std::array<float, HISTORY_SIZE>                  activityHistory  {};
+    std::vector<GrainVisualizationPoint>             currentPoints;
+    std::array<juce::Point<float>, MAX_GRAIN_SLOTS>  prevPointByIndex {};
+    std::array<bool,               MAX_GRAIN_SLOTS>  hadPrevPoint     {};
+
+    int   displayedGrainCount  = 0;
+    float animationPhase       = 0.0f;
+    float impactFlash          = 0.0f;
+    float previousNormActivity = 0.0f;
+
+    //── Sample markers (Simpler-style) ────────────────────────────────────────
+    float sampleStartNorm = 0.0f;
+    float sampleEndNorm   = 1.0f;
+
+    enum class DragMode { None, StartMarker, EndMarker, Position };
+    DragMode dragMode = DragMode::None;
+
+    static constexpr float MARKER_HIT_PX = 10.0f;
+
+    //── Drawing helpers ───────────────────────────────────────────────────────
+    void drawGrid            (juce::Graphics& g, juce::Rectangle<int> b);
+    void drawSampleZone      (juce::Graphics& g, juce::Rectangle<int> b);
+    void drawWaveform        (juce::Graphics& g, juce::Rectangle<int> b);
+    void drawGrainDots       (juce::Graphics& g, juce::Rectangle<int> b);
+    void drawActivityBar     (juce::Graphics& g, juce::Rectangle<int> b);
+    void drawSampleMarkers   (juce::Graphics& g, juce::Rectangle<int> b);
+    void drawGrainSeedCursor (juce::Graphics& g, juce::Rectangle<int> b);
+    void drawPlayhead        (juce::Graphics& g, juce::Rectangle<int> b);
+
+    // Coordinate helpers (respects viewStart + zoomFactor)
+    float normToX (float norm, juce::Rectangle<int> b) const;
+    float xToNorm (float x,    juce::Rectangle<int> b) const;
+
+    // Internal grain-data update (called from timerCallback)
+    void pollGrainData();
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WaveformView)
 };

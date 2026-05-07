@@ -190,11 +190,30 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
     setupResetButton(resetLfoButton, "LFO");
     setupResetButton(resetEffectsButton, "EFFECTS");
     setupResetButton(resetXYButton, "XY/MIDI");
-    
+
     waveformView = std::make_unique<WaveformView>();
     addAndMakeVisible(waveformView.get());
+    waveformView->setProcessor(&audioProcessor);
     if (auto sampleFile = audioProcessor.getLoadedSampleFile(); sampleFile.existsAsFile())
         waveformView->setSource(new juce::FileInputSource(sampleFile));
+
+    // Connecter les marqueurs start/end au GrainEngine
+    waveformView->onStartMarkerChanged = [this](float norm)
+    {
+        if (auto* engine = audioProcessor.getGrainEngine())
+            engine->setSampleRange(norm, waveformView->getSampleEndNorm());
+    };
+    waveformView->onEndMarkerChanged = [this](float norm)
+    {
+        if (auto* engine = audioProcessor.getGrainEngine())
+            engine->setSampleRange(waveformView->getSampleStartNorm(), norm);
+    };
+    // Drag de la barre jaune -> paramètre position
+    waveformView->onPositionChanged = [this](float norm)
+    {
+        if (auto* param = audioProcessor.getValueTreeState().getParameter("position"))
+            param->setValueNotifyingHost(param->convertTo0to1(norm));
+    };
     
     //==========================================================================
     // COLUMN 1: CYAN - Granular Controls
@@ -284,6 +303,11 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
 
     // Master Gain (sous la Formant Mix)
     setupSlider(masterGainSlider, masterGainLabel, "MASTER GAIN", juce::NormalisableRange<double>(0.0, 2.0, 0.01), 1.0);
+
+    setupSlider(glitchIntensitySlider, glitchIntensityLabel, "GLITCH INT",
+                juce::NormalisableRange<double>(0.0, 1.0, 0.01), 0.0);
+    setupSlider(glitchRateSlider, glitchRateLabel, "GLITCH RATE",
+                juce::NormalisableRange<double>(0.5, 20.0, 0.1), 4.0);
     
     //==========================================================================
     // COLUMN 4: VERT - XY Pad + Mapping
@@ -334,13 +358,6 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
                 juce::NormalisableRange<double>(1.0, 7.0, 1.0), 2.0);
     
     //==========================================================================
-    // FOOTER
-    //==========================================================================
-    activeGrainsDisplay = std::make_unique<ActiveGrainsDisplay>();
-    activeGrainsDisplay->setProcessor(&audioProcessor);
-    addAndMakeVisible(activeGrainsDisplay.get());
-    
-    //==========================================================================
     // CREATE APVTS ATTACHMENTS
     //==========================================================================
     auto& apvts = audioProcessor.getValueTreeState();
@@ -373,6 +390,8 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
     sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "pitchBendRange", pitchBendRangeSlider));
     // Master Gain attachment
     sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "masterGain", masterGainSlider));
+    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "glitchIntensity", glitchIntensitySlider));
+    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "glitchRate", glitchRateSlider));
     maxGrainsAttachment = std::make_unique<SliderAttachment>(apvts, "maxActiveGrains", maxGrainsSlider);
     cpuModeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, "cpuMode", cpuModeCombo);
 
@@ -547,7 +566,7 @@ void NativePluginEditor::resized()
     auto headerArea = bounds.removeFromTop(HEADER_HEIGHT);
     headerArea.reduce(MARGIN * 2, MARGIN);
 
-    const int waveformHeight = 56;
+    const int waveformHeight = 120;
     auto waveformArea = headerArea.removeFromBottom(waveformHeight);
     headerArea.removeFromBottom(4);
 
@@ -612,16 +631,7 @@ void NativePluginEditor::resized()
 
     if (waveformView)
         waveformView->setBounds(waveformArea);
-    
-    //==========================================================================
-    // FOOTER (fixed height)
-    //==========================================================================
-    auto footerArea = bounds.removeFromBottom(FOOTER_HEIGHT);
-    footerArea.reduce(MARGIN * 2, MARGIN / 2);
 
-    if (activeGrainsDisplay)
-        activeGrainsDisplay->setBounds(footerArea);
-    
     //==========================================================================
     // MAIN CONTENT AREA - 4 COLUMNS (Manual Layout)
     //==========================================================================
@@ -801,7 +811,30 @@ void NativePluginEditor::resized()
     auto formantMixArea = formantRow;
     formantMixArea.removeFromTop(labelReserve);
     formantMixSlider.setBounds(formantMixArea.withSizeKeepingCentre(sliderSize, sliderSize));
-    
+
+    // Master Gain — toujours affiché, centré dans une rangée dédiée
+    {
+        innerArea.removeFromTop(MARGIN);
+        auto masterRow = innerArea.removeFromTop(effectControlRowHeight);
+        auto masterArea = masterRow.withSizeKeepingCentre(sliderSize * 2, masterRow.getHeight());
+        masterArea.removeFromTop(labelReserve);
+        masterGainSlider.setBounds(masterArea.withSizeKeepingCentre(sliderSize, sliderSize));
+    }
+
+    // Glitch controls (2 knobs) — dans l'espace restant, si disponible
+    if (innerArea.getHeight() >= effectControlRowHeight)
+    {
+        innerArea.removeFromTop(MARGIN);
+        auto glitchRow = innerArea.removeFromTop(effectControlRowHeight);
+        auto glitchIntArea = glitchRow.removeFromLeft((glitchRow.getWidth() - columnGap) / 2);
+        glitchIntArea.removeFromTop(labelReserve);
+        glitchIntensitySlider.setBounds(glitchIntArea.withSizeKeepingCentre(sliderSize, sliderSize));
+        glitchRow.removeFromLeft(columnGap);
+        auto glitchRateArea = glitchRow;
+        glitchRateArea.removeFromTop(labelReserve);
+        glitchRateSlider.setBounds(glitchRateArea.withSizeKeepingCentre(sliderSize, sliderSize));
+    }
+
     contentArea.removeFromLeft(columnGap);
     
     //==========================================================================
@@ -937,27 +970,9 @@ void NativePluginEditor::applyXYPadMappings(juce::Point<float> normalizedPositio
 //==============================================================================
 void NativePluginEditor::timerCallback()
 {
-    // Synchronise les grains actifs sur la waveform
-    if (waveformView && audioProcessor.getGrainEngine())
-    {
-        const auto& sample = audioProcessor.getLoadedSample();
-        const int sampleLen = sample.getNumSamples();
-        std::vector<GrainRegion> regions;
-        auto vizPoints = audioProcessor.getGrainEngine()->getVisualizationPoints();
-        for (const auto& p : vizPoints)
-        {
-            // On suppose que chaque point correspond à un grain actif
-            // On approxime la taille du grain à partir de progress (0..1)
-            const auto& grain = audioProcessor.getGrainEngine()->getGrains()[p.index];
-            if (grain.grainSize > 0 && sampleLen > 0)
-            {
-                float startNorm = (float)grain.startPos / (float)sampleLen;
-                float endNorm = (float)(grain.startPos + grain.grainSize) / (float)sampleLen;
-                regions.push_back({ startNorm, endNorm, p.energy, p.reverse });
-            }
-        }
-        waveformView->setActiveGrainRegions(regions);
-    }
+    // Update grain seed position cursor (yellow dashed line)
+    if (waveformView)
+        waveformView->setGrainSeedPosition((float)positionSlider.getValue());
     if (xyMappingNeedsUpdate || xySmoothedX.isSmoothing() || xySmoothedY.isSmoothing())
     {
         const juce::Point<float> smoothedPosition {
@@ -1061,6 +1076,16 @@ void NativePluginEditor::loadSelectedPreset()
         if (state.getNumChildren() > 0)
         {
             apvts.replaceState(state);
+
+            // Restore sample markers if saved
+            if (state.hasProperty("sampleRangeStart") && state.hasProperty("sampleRangeEnd"))
+            {
+                const float s = static_cast<float>(state.getProperty("sampleRangeStart"));
+                const float e = static_cast<float>(state.getProperty("sampleRangeEnd"));
+                if (waveformView) waveformView->setSampleRange(s, e);
+                if (auto* eng = audioProcessor.getGrainEngine()) eng->setSampleRange(s, e);
+            }
+
             return;
         }
 
@@ -1116,6 +1141,15 @@ void NativePluginEditor::loadSelectedPreset()
         applyPropertyToParameter("pitchBendRange", "pitchBendRange");
         applyPropertyToParameter("maxActiveGrains", "maxActiveGrains");
         applyPropertyToParameter("cpuMode", "cpuMode");
+
+        // Restore sample markers if saved in legacy preset
+        if (state.hasProperty("sampleRangeStart") && state.hasProperty("sampleRangeEnd"))
+        {
+            const float s = static_cast<float>(state.getProperty("sampleRangeStart"));
+            const float e = static_cast<float>(state.getProperty("sampleRangeEnd"));
+            if (waveformView) waveformView->setSampleRange(s, e);
+            if (auto* eng = audioProcessor.getGrainEngine()) eng->setSampleRange(s, e);
+        }
     }
 }
 
@@ -1129,8 +1163,15 @@ void NativePluginEditor::saveCurrentPresetAs()
         return;
 
     const auto category = presetCategoryCombo.getText().isEmpty() ? juce::String("Uncategorized") : presetCategoryCombo.getText();
+    auto savedState = audioProcessor.getValueTreeState().copyState();
+    // Persist marker positions alongside the APVTS state
+    if (waveformView)
+    {
+        savedState.setProperty("sampleRangeStart", waveformView->getSampleStartNorm(), nullptr);
+        savedState.setProperty("sampleRangeEnd",   waveformView->getSampleEndNorm(),   nullptr);
+    }
     presetManager.savePreset(name,
-                             audioProcessor.getValueTreeState().copyState(),
+                             savedState,
                              category,
                              presetFavoriteToggle.getToggleState());
     savePresetsToDisk();

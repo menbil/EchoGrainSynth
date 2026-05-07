@@ -130,6 +130,7 @@ void EchoGrainSynthAudioProcessor::prepareToPlay (double sampleRate, int samples
     reverbEffect.prepare(sampleRate, samplesPerBlock);
     formantFilter.prepare(sampleRate, samplesPerBlock);
     stretchEffect.prepare(sampleRate, samplesPerBlock);
+    glitchEffect.prepare(sampleRate, samplesPerBlock);
 }
 
 void EchoGrainSynthAudioProcessor::releaseResources()
@@ -381,7 +382,18 @@ void EchoGrainSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     if (smoothedFormantMix.getCurrentValue() > 0.0001f || smoothedFormantMix.isSmoothing())
         formantFilter.processBlock(buffer);
 
-    // MASTER GAIN & SOFT CLIPPER (ultra-optimisé)
+    // Glitch
+    if (auto* intensityParam = apvts.getRawParameterValue("glitchIntensity"))
+    {
+        const float glitchIntensity = intensityParam->load();
+        glitchEffect.setIntensity(glitchIntensity);
+        if (auto* rateParam = apvts.getRawParameterValue("glitchRate"))
+            glitchEffect.setRate(rateParam->load());
+        if (glitchIntensity > 0.001f)
+            glitchEffect.processBlock(buffer);
+    }
+
+    // MASTER GAIN & SOFT CLIPPER
     float masterGain = 1.0f;
     if (auto* gainParam = apvts.getRawParameterValue("masterGain"))
         masterGain = gainParam->load();
@@ -584,6 +596,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout EchoGrainSynthAudioProcessor
 
     // Master Gain
     layout.add(std::make_unique<juce::AudioParameterFloat>("masterGain", "Master Gain", juce::NormalisableRange<float>(0.0f, 2.0f), 1.0f));
+
+    // Glitch
+    layout.add(std::make_unique<juce::AudioParameterFloat>("glitchIntensity", "Glitch Intensity", juce::NormalisableRange<float>(0.0f, 1.0f), 0.0f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("glitchRate", "Glitch Rate", juce::NormalisableRange<float>(0.5f, 20.0f), 4.0f));
     
     // XY Pad mapping slots
     layout.add(std::make_unique<juce::AudioParameterChoice>("xySlot1Target", "XY Slot 1 Target", 

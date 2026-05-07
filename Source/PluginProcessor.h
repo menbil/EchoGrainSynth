@@ -5,6 +5,7 @@
 #include "Effects/ReverbEffect.h"
 #include "Effects/FormantFilter.h"
 #include "Effects/StretchEffect.h"
+#include "Effects/GlitchEffect.h"
 
 // Forward declaration
 class EchoGrainSynthAudioProcessorEditor;
@@ -74,6 +75,7 @@ public:
     ReverbEffect& getReverbEffect() { return reverbEffect; }
     FormantFilter& getFormantFilter() { return formantFilter; }
     StretchEffect& getStretchEffect() { return stretchEffect; }
+    GlitchEffect& getGlitchEffect() { return glitchEffect; }
     
     // Helper method for UI components
     int getActiveGrainCount() const { return grainEngine ? grainEngine->getActiveGrains() : 0; }
@@ -111,6 +113,7 @@ private:
     ReverbEffect reverbEffect;
     FormantFilter formantFilter;
     StretchEffect stretchEffect;
+    GlitchEffect glitchEffect;
     
     // Targeted smoothing for click-prone effect mix controls.
     juce::LinearSmoothedValue<float> smoothedReverbWet;

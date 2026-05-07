@@ -80,6 +80,13 @@ public:
     void setPanSpread(float spread) { panSpread = juce::jlimit(0.0f, 1.0f, spread); }
     void setMaxActiveGrains(int maxCount) { maxActiveGrains = juce::jlimit(4, maxGrains, maxCount); }
     void setEcoMode(bool shouldUseEcoMode) { ecoMode = shouldUseEcoMode; }
+    void setSampleRange(float startNorm, float endNorm)
+    {
+        sampleRangeStart = juce::jlimit(0.0f, 1.0f, startNorm);
+        sampleRangeEnd   = juce::jlimit(sampleRangeStart + 0.001f, 1.0f, endNorm);
+    }
+    float getSampleRangeStart() const { return sampleRangeStart; }
+    float getSampleRangeEnd()   const { return sampleRangeEnd; }
     
     // ADSR Envelope (replacing simple attack/release)
     void setADSRAttack(float attack) { adsrAttack = juce::jlimit(0.0f, 600.0f, attack); }
@@ -115,6 +122,9 @@ private:
     int maxActiveGrains = maxGrains;
     bool ecoMode = false;
     
+    float sampleRangeStart = 0.0f;
+    float sampleRangeEnd   = 1.0f;
+
     juce::AudioBuffer<float> sampleBuffer;
     double sampleRate = 44100.0;
     
