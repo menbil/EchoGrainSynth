@@ -79,6 +79,7 @@ public:
     void setPan(float panAmount) { pan = juce::jlimit(-1.0f, 1.0f, panAmount); }
     void setPanSpread(float spread) { panSpread = juce::jlimit(0.0f, 1.0f, spread); }
     void setMaxActiveGrains(int maxCount) { maxActiveGrains = juce::jlimit(4, maxGrains, maxCount); }
+    int  getMaxActiveGrains() const        { return maxActiveGrains; }
     void setEcoMode(bool shouldUseEcoMode) { ecoMode = shouldUseEcoMode; }
     void setSampleRange(float startNorm, float endNorm)
     {

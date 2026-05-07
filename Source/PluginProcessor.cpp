@@ -302,9 +302,6 @@ void EchoGrainSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     }
 
     // MIDI-triggered granular synthesis
-    // Track active notes and pitch wheel to keep pitch controls responsive while notes are held.
-    static std::array<bool, 128> activeNotes{false};
-    static float currentPitchWheel = 0.0f; // -1..+1
     float rootNote = 60.0f;
     float fineTuneCents = 0.0f;
     float pitchBendRange = 2.0f;

@@ -111,6 +111,10 @@ private:
     ReverbEffect reverbEffect;
     FormantFilter formantFilter;
     GlitchEffect glitchEffect;
+
+    // Per-instance MIDI state (must NOT be static — each instance is independent)
+    std::array<bool, 128> activeNotes {};
+    float currentPitchWheel = 0.0f;
     
     // Targeted smoothing for click-prone effect mix controls.
     juce::LinearSmoothedValue<float> smoothedReverbWet;

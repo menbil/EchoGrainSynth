@@ -103,8 +103,8 @@ void WaveformView::pollGrainData()
     currentPoints = engine->getVisualizationPoints();
     const int count = static_cast<int>(currentPoints.size());
 
-    displayedGrainCount = static_cast<int>(
-        displayedGrainCount * GRAIN_SMOOTHING + count * (1.0f - GRAIN_SMOOTHING));
+    // Mise à jour directe sans smoothing excessif
+    displayedGrainCount = count;
 
     const float normAct = juce::jlimit(0.0f, 1.0f,
         static_cast<float>(displayedGrainCount) / static_cast<float>(MAX_GRAIN_SLOTS));
@@ -311,11 +311,17 @@ void WaveformView::drawActivityBar(juce::Graphics& g, juce::Rectangle<int> b)
         g.fillRect(x, cy, 2.2f, halfH);
     }
 
-    // Grain count label
+    // Grain count label — affiche max réel depuis le moteur
     g.setFont(juce::FontOptions(10.0f));
     g.setColour(juce::Colour::fromString("#00FFFF").withAlpha(0.75f));
-    g.drawText(juce::String(displayedGrainCount) + " / " + juce::String(MAX_GRAIN_SLOTS) + " GRAINS",
-               b.reduced(4, 0), juce::Justification::centredRight);
+    {
+        int maxActive = MAX_GRAIN_SLOTS;
+        if (processor != nullptr)
+            if (auto* eng = processor->getGrainEngine())
+                maxActive = eng->getMaxActiveGrains();
+        g.drawText(juce::String(displayedGrainCount) + " / " + juce::String(maxActive) + " GRAINS",
+                   b.reduced(4, 0), juce::Justification::centredRight);
+    }
 }
 
 void WaveformView::drawSampleMarkers(juce::Graphics& g, juce::Rectangle<int> b)

@@ -141,6 +141,7 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
     setupSlider(maxGrainsSlider, maxGrainsLabel, "MAX GRAINS",
                 juce::NormalisableRange<double>(8.0, 64.0, 1.0), 40.0);
     maxGrainsLabel.setText("MAX ACTIVE GRAINS", juce::dontSendNotification);
+    maxGrainsLabel.attachToComponent(nullptr, false); // pas de label flottant dans le header
     maxGrainsSlider.setSliderStyle(juce::Slider::LinearHorizontal);
     maxGrainsSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 54, 18);
     maxGrainsSlider.setNumDecimalPlacesToDisplay(0);
@@ -592,7 +593,8 @@ void NativePluginEditor::resized()
     cpuModeCombo.setBounds(controlsRow1.removeFromLeft(cpuModeW));
     controlsRow1.removeFromLeft(6);
     auto maxGrainsArea = controlsRow1.removeFromLeft(maxGrainsW);
-    maxGrainsLabel.setBounds(maxGrainsArea.removeFromTop(14));
+    // Label "MAX GRAINS" à gauche, slider prend le reste
+    maxGrainsLabel.setBounds(maxGrainsArea.removeFromLeft(78));
     maxGrainsSlider.setBounds(maxGrainsArea);
 
     headerArea.removeFromTop(6);
