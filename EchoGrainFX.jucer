@@ -19,9 +19,6 @@
         <FILE id="LgQEfW" name="ReverbEffect.cpp" compile="1" resource="0"
               file="Source/Effects/ReverbEffect.cpp"/>
         <FILE id="zUuGO0" name="ReverbEffect.h" compile="0" resource="0" file="Source/Effects/ReverbEffect.h"/>
-        <FILE id="eD1LQC" name="StretchEffect.cpp" compile="1" resource="0"
-              file="Source/Effects/StretchEffect.cpp"/>
-        <FILE id="BbElQa" name="StretchEffect.h" compile="0" resource="0" file="Source/Effects/StretchEffect.h"/>
       </GROUP>
       <GROUP id="{F2E3D4C5-9A8B-7C6D-5E4F-123456789ABC}" name="UI Components">
         <FILE id="ADSR01" name="AdsrComponent.cpp" compile="1" resource="0"
@@ -36,12 +33,7 @@
               file="Source/XYPadMappingPanel.h"/>
         <FILE id="LFOMO1" name="LfoMonitorComponent.cpp" compile="1" resource="0"
               file="Source/LfoMonitorComponent.cpp"/>
-        <FILE id="LFOMO2" name="LfoMonitorComponent.h" compile="0" resource="0"
-              file="Source/LfoMonitorComponent.h"/>
-        <FILE id="GRAIN1" name="ActiveGrainsDisplay.cpp" compile="1" resource="0"
-              file="Source/ActiveGrainsDisplay.cpp"/>
-        <FILE id="GRAIN2" name="ActiveGrainsDisplay.h" compile="0" resource="0"
-              file="Source/ActiveGrainsDisplay.h"/>
+        <FILE id="LFOMO2" name="LfoMonitorComponent.h" compile="0" resource="0" file="Source/LfoMonitorComponent.h"/>
       </GROUP>
       <FILE id="UQwJDQ" name="GrainEngine.cpp" compile="1" resource="0" file="Source/GrainEngine.cpp"/>
       <FILE id="pv7ops" name="GrainEngine.h" compile="0" resource="0" file="Source/GrainEngine.h"/>
@@ -62,9 +54,6 @@
       <FILE id="kLmNop" name="PresetManager.cpp" compile="1" resource="0"
             file="Source/PresetManager.cpp"/>
       <FILE id="qRsTuv" name="PresetManager.h" compile="0" resource="0" file="Source/PresetManager.h"/>
-      <FILE id="hue98U" name="SampleManager.cpp" compile="1" resource="0"
-            file="Source/SampleManager.cpp"/>
-      <FILE id="ZP3TIm" name="SampleManager.h" compile="0" resource="0" file="Source/SampleManager.h"/>
       <FILE id="VVhsCN" name="XYPadComponent.cpp" compile="1" resource="0"
             file="Source/XYPadComponent.cpp"/>
       <FILE id="otl4ni" name="XYPadComponent.h" compile="0" resource="0"

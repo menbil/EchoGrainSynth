@@ -108,7 +108,12 @@ public:
     float getGrainSize() const { return grainSize; }
     float getGrainDensity() const { return grainDensity; }
     float getPosition() const { return playbackPosition; }
-    int getActiveGrains() const { return activeGrains; }
+    int getActiveGrains() const
+    {
+        int count = 0;
+        for (const auto& g : grains) if (g.isActive) ++count;
+        return count;
+    }
     std::vector<GrainVisualizationPoint> getVisualizationPoints() const;
     
     // Sample info
@@ -118,7 +123,6 @@ public:
 private:
     // (plus de redéfinition ici)
     std::array<Grain, maxGrains> grains;
-    int activeGrains = 0;
     int maxActiveGrains = maxGrains;
     bool ecoMode = false;
     

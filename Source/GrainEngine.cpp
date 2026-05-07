@@ -63,7 +63,6 @@ void GrainEngine::processBlock(juce::AudioBuffer<float>& buffer, int numSamples)
             if (floatPos >= static_cast<float>(grain.grainSize - 1) || baseIndex == nextIndex)
             {
                 grain.reset();
-                --activeGrains;
                 break;
             }
             
@@ -77,7 +76,6 @@ void GrainEngine::processBlock(juce::AudioBuffer<float>& buffer, int numSamples)
                 {
                     // ADSR finished, deactivate grain
                     grain.reset();
-                    --activeGrains;
                     break;
                 }
             }
@@ -112,13 +110,12 @@ void GrainEngine::setSample(const juce::AudioBuffer<float>& newSample)
     // Reset all grains when loading a new sample
     for (auto& grain : grains)
         grain.reset();
-    activeGrains = 0;
 }
 
 std::vector<GrainVisualizationPoint> GrainEngine::getVisualizationPoints() const
 {
     std::vector<GrainVisualizationPoint> points;
-    points.reserve(static_cast<size_t>(activeGrains));
+    points.reserve(static_cast<size_t>(maxActiveGrains));
 
     for (size_t i = 0; i < grains.size(); ++i)
     {
@@ -155,7 +152,9 @@ void GrainEngine::triggerGrain()
 
 void GrainEngine::spawnGrain()
 {
-    if (activeGrains >= maxActiveGrains || !hasSample())
+    int activeCount = 0;
+    for (const auto& g : grains) if (g.isActive) ++activeCount;
+    if (activeCount >= maxActiveGrains || !hasSample())
         return;
         
     int grainIndex = findInactiveGrain();
@@ -193,8 +192,6 @@ void GrainEngine::spawnGrain()
     
     // Set amplitude (could add random variation here)
     grain.amplitude = ecoMode ? 0.42f : 0.5f; // Eco mode softens cumulative energy and CPU pressure
-    
-    ++activeGrains;
 }
 
 float GrainEngine::calculateEnvelope(const Grain& grain) const
@@ -235,7 +232,9 @@ int GrainEngine::findInactiveGrain()
 
 void GrainEngine::triggerGrainForNote(int noteNumber, float velocity)
 {
-    if (activeGrains >= maxActiveGrains)
+    int activeCount = 0;
+    for (const auto& g : grains) if (g.isActive) ++activeCount;
+    if (activeCount >= maxActiveGrains)
         return;
 
     int grainIndex = findInactiveGrain();
@@ -331,8 +330,6 @@ void GrainEngine::spawnGrainForNote(int noteNumber, float velocity)
     grain.position = 0;
     grain.age = 0;
     grain.reverse = uniformDist(gen) < reverseChance;
-    
-    ++activeGrains;
 }
 
 float GrainEngine::calculateADSREnvelope(Grain& grain) const

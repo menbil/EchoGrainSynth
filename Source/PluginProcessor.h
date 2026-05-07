@@ -4,7 +4,6 @@
 #include "GrainEngine.h"
 #include "Effects/ReverbEffect.h"
 #include "Effects/FormantFilter.h"
-#include "Effects/StretchEffect.h"
 #include "Effects/GlitchEffect.h"
 
 // Forward declaration
@@ -74,7 +73,6 @@ public:
     GrainEngine* getGrainEngine() { return grainEngine.get(); }
     ReverbEffect& getReverbEffect() { return reverbEffect; }
     FormantFilter& getFormantFilter() { return formantFilter; }
-    StretchEffect& getStretchEffect() { return stretchEffect; }
     GlitchEffect& getGlitchEffect() { return glitchEffect; }
     
     // Helper method for UI components
@@ -112,7 +110,6 @@ private:
     // Effects
     ReverbEffect reverbEffect;
     FormantFilter formantFilter;
-    StretchEffect stretchEffect;
     GlitchEffect glitchEffect;
     
     // Targeted smoothing for click-prone effect mix controls.

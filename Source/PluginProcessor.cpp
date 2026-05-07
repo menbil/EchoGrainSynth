@@ -129,7 +129,6 @@ void EchoGrainSynthAudioProcessor::prepareToPlay (double sampleRate, int samples
     // Prepare effects
     reverbEffect.prepare(sampleRate, samplesPerBlock);
     formantFilter.prepare(sampleRate, samplesPerBlock);
-    stretchEffect.prepare(sampleRate, samplesPerBlock);
     glitchEffect.prepare(sampleRate, samplesPerBlock);
 }
 
