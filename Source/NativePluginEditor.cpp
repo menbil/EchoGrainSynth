@@ -39,13 +39,13 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
     addAndMakeVisible(titleLabel);
     titleLabel.setText("ECHO GRAIN SYNTH", juce::dontSendNotification);
     titleLabel.setFont(juce::Font(juce::FontOptions(27.0f, juce::Font::bold)));
-    titleLabel.setColour(juce::Label::textColourId, magentaColor);
+    titleLabel.setColour(juce::Label::textColourId, juce::Colours::transparentBlack);
     titleLabel.setJustificationType(juce::Justification::centredLeft);
     
     addAndMakeVisible(subtitleLabel);
     subtitleLabel.setText("Solar Bumper's Ethereal Granular Instrument", juce::dontSendNotification);
-    subtitleLabel.setFont(juce::Font(juce::FontOptions(13.0f, juce::Font::plain)));
-    subtitleLabel.setColour(juce::Label::textColourId, juce::Colours::white.withAlpha(0.75f));
+    subtitleLabel.setFont(juce::Font(juce::FontOptions(13.0f, juce::Font::italic)));
+    subtitleLabel.setColour(juce::Label::textColourId, juce::Colours::transparentBlack);
     subtitleLabel.setJustificationType(juce::Justification::centredLeft);
     
     addAndMakeVisible(loadSampleButton);
@@ -60,7 +60,7 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
         initialSampleName = "Drop a sample anywhere in the plugin";
     sampleNameLabel.setText(initialSampleName, juce::dontSendNotification);
     sampleNameLabel.setFont(juce::Font(juce::FontOptions(11.0f)));
-    sampleNameLabel.setColour(juce::Label::textColourId, juce::Colours::white.withAlpha(0.8f));
+    sampleNameLabel.setColour(juce::Label::textColourId, juce::Colours::transparentBlack);
     sampleNameLabel.setJustificationType(juce::Justification::centredLeft);
 
     addAndMakeVisible(presetCombo);
@@ -198,6 +198,23 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
     if (auto sampleFile = audioProcessor.getLoadedSampleFile(); sampleFile.existsAsFile())
         waveformView->setSource(new juce::FileInputSource(sampleFile));
 
+    // A/B bypass toggle
+    addAndMakeVisible(abToggle);
+    abToggle.setClickingTogglesState(true);
+    abToggle.setButtonText("A");
+    abToggle.setToggleState(audioProcessor.isABBypassEnabled(), juce::dontSendNotification);
+    abToggle.setColour(juce::TextButton::buttonColourId,   juce::Colour(0xff1a2434));
+    abToggle.setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xffB06EC7));  // magenta accent when B active
+    abToggle.setColour(juce::TextButton::textColourOffId,  juce::Colours::white.withAlpha(0.85f));
+    abToggle.setColour(juce::TextButton::textColourOnId,   juce::Colours::white);
+    abToggle.setLookAndFeel(&lookAndFeel);
+    abToggle.onClick = [this]
+    {
+        const bool isB = abToggle.getToggleState();
+        abToggle.setButtonText(isB ? "B" : "A");
+        audioProcessor.setABBypass(isB);
+    };
+
     // Connecter les marqueurs start/end au GrainEngine
     waveformView->onStartMarkerChanged = [this](float norm)
     {
@@ -222,11 +239,50 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
     addAndMakeVisible(grainGroup);
     styleSection(grainGroup, cyanColor);
     grainGroup.setText("GRANULAR");
-    
-    // Row 1: Grain Size + Density
-    setupSlider(grainSizeSlider, grainSizeLabel, "GRAIN SIZE", 
+
+    // Freeze button
+    addAndMakeVisible(freezeButton);
+    freezeButton.setClickingTogglesState(true);
+    freezeButton.setButtonText("FREEZE");
+    freezeButton.setColour(juce::TextButton::buttonColourId,   juce::Colour(0xff1a2434));
+    freezeButton.setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xff3A8AB0));
+    freezeButton.setColour(juce::TextButton::textColourOffId,  juce::Colours::white.withAlpha(0.85f));
+    freezeButton.setColour(juce::TextButton::textColourOnId,   juce::Colours::white);
+    freezeButton.setLookAndFeel(&lookAndFeel);
+    freezeButton.onClick = [this]
+    {
+        if (auto* param = audioProcessor.getValueTreeState().getParameter("freeze"))
+        {
+            param->beginChangeGesture();
+            param->setValueNotifyingHost(freezeButton.getToggleState() ? 1.0f : 0.0f);
+            param->endChangeGesture();
+        }
+    };
+
+    // Window type combo
+    addAndMakeVisible(windowTypeCombo);
+    windowTypeCombo.addItem("Hanning",     1);
+    windowTypeCombo.addItem("Gaussian",    2);
+    windowTypeCombo.addItem("Rectangular", 3);
+    windowTypeCombo.addItem("Tukey",       4);
+    windowTypeCombo.setSelectedId(1, juce::dontSendNotification);
+    windowTypeCombo.onChange = [this]
+    {
+        if (auto* param = audioProcessor.getValueTreeState().getParameter("windowType"))
+        {
+            const float v = static_cast<float>(windowTypeCombo.getSelectedItemIndex());
+            param->beginChangeGesture();
+            param->setValueNotifyingHost(param->convertTo0to1(v));
+            param->endChangeGesture();
+        }
+    };
+
+    // Row 1: Grain Size + GrainSizeSpread + Density
+    setupSlider(grainSizeSlider, grainSizeLabel, "GRAIN SIZE",
                 juce::NormalisableRange<double>(10.0, 600.0, 1.0), 100.0);
-    setupSlider(densitySlider, densityLabel, "DENSITY", 
+    setupSlider(grainSizeSpreadSlider, grainSizeSpreadLabel, "SIZE SPREAD",
+                juce::NormalisableRange<double>(0.0, 200.0, 1.0), 0.0);
+    setupSlider(densitySlider, densityLabel, "DENSITY",
                 juce::NormalisableRange<double>(0.1, 30.0, 0.1), 10.0);
     
     // Row 2: Position + Pitch  
@@ -261,6 +317,24 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
     addAndMakeVisible(lfoGroup);
     styleSection(lfoGroup, orangeColor);
     lfoGroup.setText("LFO MODULATION");
+
+    // LFO waveform shape combo
+    addAndMakeVisible(lfoWaveformCombo);
+    lfoWaveformCombo.addItem("Sine",     1);
+    lfoWaveformCombo.addItem("Square",   2);
+    lfoWaveformCombo.addItem("Triangle", 3);
+    lfoWaveformCombo.addItem("S&H",      4);
+    lfoWaveformCombo.setSelectedId(1, juce::dontSendNotification);
+    lfoWaveformCombo.onChange = [this]
+    {
+        if (auto* param = audioProcessor.getValueTreeState().getParameter("lfoWaveform"))
+        {
+            const float v = static_cast<float>(lfoWaveformCombo.getSelectedItemIndex());
+            param->beginChangeGesture();
+            param->setValueNotifyingHost(param->convertTo0to1(v));
+            param->endChangeGesture();
+        }
+    };
     
     setupSlider(positionLfoFreqSlider, positionLfoFreqLabel, "POS FREQ", 
                 juce::NormalisableRange<double>(0.1, 12.0, 0.1), 1.0);
@@ -272,10 +346,16 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
     setupSlider(pitchLfoDepthSlider, pitchLfoDepthLabel, "PIT DEPTH", 
                 juce::NormalisableRange<double>(0.0, 1.0, 0.01), 0.0);
     
-    setupSlider(densityLfoFreqSlider, densityLfoFreqLabel, "DEN FREQ", 
+    setupSlider(densityLfoFreqSlider, densityLfoFreqLabel, "DEN FREQ",
                 juce::NormalisableRange<double>(0.1, 12.0, 0.1), 1.0);
-    setupSlider(densityLfoDepthSlider, densityLfoDepthLabel, "DEN DEPTH", 
+    setupSlider(densityLfoDepthSlider, densityLfoDepthLabel, "DEN DEPTH",
                 juce::NormalisableRange<double>(0.0, 1.0, 0.01), 0.0);
+
+    // GrainSize LFO
+    setupSlider(grainSizeLfoFreqSlider, grainSizeLfoFreqLabel, "SZ FREQ",
+                juce::NormalisableRange<double>(0.01, 10.0, 0.01), 1.0);
+    setupSlider(grainSizeLfoDepthSlider, grainSizeLfoDepthLabel, "SZ DEPTH",
+                juce::NormalisableRange<double>(0.0, 100.0, 1.0), 0.0);
     
     lfoMonitor = std::make_unique<LfoMonitorComponent>(audioProcessor);
     addAndMakeVisible(lfoMonitor.get());
@@ -302,13 +382,35 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
     setupSlider(formantMixSlider, formantMixLabel, "FORMANT MIX", 
                 juce::NormalisableRange<double>(0.0, 1.0, 0.01), 0.0);
 
+    // Delay
+    setupSlider(delayTimeSlider, delayTimeLabel, "DELAY TIME",
+                juce::NormalisableRange<double>(1.0, 2000.0, 1.0), 375.0);
+    setupSlider(delayFeedbackSlider, delayFeedbackLabel, "FEEDBACK",
+                juce::NormalisableRange<double>(0.0, 0.95, 0.01), 0.3);
+    setupSlider(delayWetSlider, delayWetLabel, "DELAY WET",
+                juce::NormalisableRange<double>(0.0, 1.0, 0.01), 0.0);
+
+    addAndMakeVisible(delayBpmSyncButton);
+    delayBpmSyncButton.setButtonText("BPM SYNC");
+    delayBpmSyncButton.setColour(juce::ToggleButton::textColourId, violetColor);
+
+    addAndMakeVisible(delaySubdivisionCombo);
+    delaySubdivisionCombo.addItem("1/1",  1);
+    delaySubdivisionCombo.addItem("1/2",  2);
+    delaySubdivisionCombo.addItem("1/4",  3);
+    delaySubdivisionCombo.addItem("1/8",  4);
+    delaySubdivisionCombo.addItem("1/16", 5);
+    delaySubdivisionCombo.setSelectedId(3, juce::dontSendNotification);
+
+    addAndMakeVisible(delaySubdivisionLabel);
+    delaySubdivisionLabel.setText("SUBDIV", juce::dontSendNotification);
+    delaySubdivisionLabel.setFont(juce::Font(juce::FontOptions(9.0f)));
+    delaySubdivisionLabel.setColour(juce::Label::textColourId, violetColor);
+    delaySubdivisionLabel.setJustificationType(juce::Justification::centred);
+
     // Master Gain (sous la Formant Mix)
     setupSlider(masterGainSlider, masterGainLabel, "MASTER GAIN", juce::NormalisableRange<double>(0.0, 2.0, 0.01), 1.0);
 
-    setupSlider(glitchIntensitySlider, glitchIntensityLabel, "GLITCH INT",
-                juce::NormalisableRange<double>(0.0, 1.0, 0.01), 0.0);
-    setupSlider(glitchRateSlider, glitchRateLabel, "GLITCH RATE",
-                juce::NormalisableRange<double>(0.5, 20.0, 0.1), 4.0);
     
     //==========================================================================
     // COLUMN 4: VERT - XY Pad + Mapping
@@ -361,40 +463,45 @@ NativePluginEditor::NativePluginEditor(EchoGrainSynthAudioProcessor& p)
     //==========================================================================
     // CREATE APVTS ATTACHMENTS
     //==========================================================================
-    auto& apvts = audioProcessor.getValueTreeState();
-    
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "grainSize", grainSizeSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "density", densitySlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "position", positionSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "positionSpread", positionSpreadSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "pitch", pitchSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "pitchSpread", pitchSpreadSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "reverse", reverseSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "pan", panSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "panSpread", panSpreadSlider));
-    
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "positionLfoFreq", positionLfoFreqSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "positionLfoDepth", positionLfoDepthSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "pitchLfoFreq", pitchLfoFreqSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "pitchLfoDepth", pitchLfoDepthSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "densityLfoFreq", densityLfoFreqSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "densityLfoDepth", densityLfoDepthSlider));
-    
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "reverbRoom", reverbRoomSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "reverbDamping", reverbDampingSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "reverbWet", reverbWetSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "formantFreq", formantFreqSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "formantMix", formantMixSlider));
-    
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "rootNote", rootNoteSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "fineTuneCents", fineTuneSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "pitchBendRange", pitchBendRangeSlider));
-    // Master Gain attachment
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "masterGain", masterGainSlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "glitchIntensity", glitchIntensitySlider));
-    sliderAttachments.push_back(std::make_unique<SliderAttachment>(apvts, "glitchRate", glitchRateSlider));
-    maxGrainsAttachment = std::make_unique<SliderAttachment>(apvts, "maxActiveGrains", maxGrainsSlider);
-    cpuModeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, "cpuMode", cpuModeCombo);
+    // APVTS attachments + MIDI Learn registration (right-click on any knob to map)
+    attachAndRegister ("grainSize",       grainSizeSlider);
+    attachAndRegister ("grainSizeSpread", grainSizeSpreadSlider);
+    attachAndRegister ("density",         densitySlider);
+    attachAndRegister ("position",        positionSlider);
+    attachAndRegister ("positionSpread",  positionSpreadSlider);
+    attachAndRegister ("pitch",           pitchSlider);
+    attachAndRegister ("pitchSpread",     pitchSpreadSlider);
+    attachAndRegister ("reverse",         reverseSlider);
+    attachAndRegister ("pan",             panSlider);
+    attachAndRegister ("panSpread",       panSpreadSlider);
+
+    attachAndRegister ("positionLfoFreq",  positionLfoFreqSlider);
+    attachAndRegister ("positionLfoDepth", positionLfoDepthSlider);
+    attachAndRegister ("pitchLfoFreq",     pitchLfoFreqSlider);
+    attachAndRegister ("pitchLfoDepth",    pitchLfoDepthSlider);
+    attachAndRegister ("densityLfoFreq",   densityLfoFreqSlider);
+    attachAndRegister ("densityLfoDepth",  densityLfoDepthSlider);
+    attachAndRegister ("grainSizeLfoFreq",  grainSizeLfoFreqSlider);
+    attachAndRegister ("grainSizeLfoDepth", grainSizeLfoDepthSlider);
+
+    attachAndRegister ("reverbRoom",    reverbRoomSlider);
+    attachAndRegister ("reverbDamping", reverbDampingSlider);
+    attachAndRegister ("reverbWet",     reverbWetSlider);
+    attachAndRegister ("formantFreq",   formantFreqSlider);
+    attachAndRegister ("formantMix",    formantMixSlider);
+    attachAndRegister ("delayTimeMs",   delayTimeSlider);
+    attachAndRegister ("delayFeedback", delayFeedbackSlider);
+    attachAndRegister ("delayWet",      delayWetSlider);
+    delayBpmSyncAttachment    = std::make_unique<ButtonAttachment>(audioProcessor.getValueTreeState(), "delayBpmSync", delayBpmSyncButton);
+    delaySubdivisionAttachment = std::make_unique<ComboAttachment>(audioProcessor.getValueTreeState(), "delaySubdivision", delaySubdivisionCombo);
+
+    attachAndRegister ("rootNote",       rootNoteSlider);
+    attachAndRegister ("fineTuneCents",  fineTuneSlider);
+    attachAndRegister ("pitchBendRange", pitchBendRangeSlider);
+    attachAndRegister ("masterGain",     masterGainSlider);
+
+    maxGrainsAttachment = std::make_unique<SliderAttachment>(audioProcessor.getValueTreeState(), "maxActiveGrains", maxGrainsSlider);
+    cpuModeAttachment   = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.getValueTreeState(), "cpuMode", cpuModeCombo);
 
     presetManager.loadPresetsFromFile(presetManager.getDefaultPresetsFile());
     refreshPresetControls();
@@ -420,6 +527,59 @@ NativePluginEditor::~NativePluginEditor()
     loadSampleButton.setLookAndFeel(nullptr);
 
     juce::LookAndFeel::setDefaultLookAndFeel(nullptr);
+}
+
+//==============================================================================
+// MIDI Learn helpers
+//==============================================================================
+void NativePluginEditor::attachAndRegister (const juce::String& paramId, juce::Slider& slider)
+{
+    auto& apvts = audioProcessor.getValueTreeState();
+    sliderAttachments.push_back (std::make_unique<SliderAttachment>(apvts, paramId, slider));
+    sliderParamIds[&slider] = paramId;
+    slider.addMouseListener (this, false);
+}
+
+void NativePluginEditor::showMidiLearnMenu (juce::Slider& slider)
+{
+    auto it = sliderParamIds.find (&slider);
+    if (it == sliderParamIds.end()) return;
+
+    const juce::String paramId = it->second;
+    auto& manager = audioProcessor.getMidiLearnManager();
+    const int currentCC = manager.getMappedCC (paramId);
+
+    juce::PopupMenu menu;
+    menu.addItem (1, "MIDI Learn \u2014 move a knob on your controller");
+    if (currentCC >= 0)
+        menu.addItem (2, "Clear CC " + juce::String (currentCC));
+    menu.addSeparator();
+    menu.addItem (3, "Clear all MIDI mappings");
+
+    const juce::Component::SafePointer<NativePluginEditor> safeThis (this);
+    const juce::String capturedParamId = paramId;
+
+    menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&slider),
+        [safeThis, capturedParamId, &manager] (int result)
+        {
+            if (safeThis == nullptr) return;
+            if (result == 1)
+                manager.startLearning (capturedParamId);
+            else if (result == 2)
+                manager.clearMapping (capturedParamId);
+            else if (result == 3)
+                manager.clearAllMappings();
+            safeThis->repaint();
+        });
+}
+
+void NativePluginEditor::mouseDown (const juce::MouseEvent& e)
+{
+    if (!e.mods.isRightButtonDown()) return;
+
+    if (auto* slider = dynamic_cast<juce::Slider*> (e.eventComponent))
+        if (sliderParamIds.count (slider) > 0)
+            showMidiLearnMenu (*slider);
 }
 
 //==============================================================================
@@ -490,12 +650,12 @@ void NativePluginEditor::paint(juce::Graphics& g)
     const auto contentTop = static_cast<float>(HEADER_HEIGHT);
     const auto contentBottom = static_cast<float>(getHeight() - FOOTER_HEIGHT);
     const auto contentHeight = contentBottom - contentTop;
-    const float totalRatio = 2.5f + 1.5f + 1.5f + 2.0f;
+    const float totalRatio = 2.4f + 1.8f + 1.8f + 2.0f;
     const float contentWidth = static_cast<float>(getWidth() - MARGIN * 2 - MARGIN * 3);
     const float left = static_cast<float>(MARGIN);
-    const float col1 = contentWidth * (2.5f / totalRatio);
-    const float col2 = contentWidth * (1.5f / totalRatio);
-    const float col3 = contentWidth * (1.5f / totalRatio);
+    const float col1 = contentWidth * (2.4f / totalRatio);
+    const float col2 = contentWidth * (1.8f / totalRatio);
+    const float col3 = contentWidth * (1.8f / totalRatio);
     const float gap = static_cast<float>(MARGIN);
 
     const std::array<std::pair<juce::Colour, juce::Rectangle<float>>, 4> ambientColumns = {{
@@ -510,10 +670,23 @@ void NativePluginEditor::paint(juce::Graphics& g)
 
     for (const auto& [accent, rect] : ambientColumns)
     {
-        juce::ColourGradient glow(accent.withAlpha(0.08f), rect.getCentreX(), rect.getY(),
+        // Ambient column glow
+        juce::ColourGradient glow(accent.withAlpha(0.11f), rect.getCentreX(), rect.getY(),
                                   juce::Colours::transparentBlack, rect.getCentreX(), rect.getBottom(), false);
         g.setGradientFill(glow);
         g.fillRoundedRectangle(rect.reduced(1.0f, 4.0f), 16.0f);
+
+        // Bright LED accent strip at column top
+        const float stripX = rect.getX() + 10.0f;
+        const float stripW = rect.getWidth() - 20.0f;
+        g.setColour(accent.withAlpha(0.68f));
+        g.fillRoundedRectangle(stripX, rect.getY() + 3.0f, stripW, 1.8f, 0.9f);
+
+        // Soft halo below the strip
+        juce::ColourGradient lineHalo(accent.withAlpha(0.26f), rect.getCentreX(), rect.getY() + 5.0f,
+                                      juce::Colours::transparentBlack, rect.getCentreX(), rect.getY() + 24.0f, false);
+        g.setGradientFill(lineHalo);
+        g.fillRect(stripX, rect.getY() + 5.0f, stripW, 19.0f);
     }
     
     // Header background (magenta)
@@ -524,6 +697,50 @@ void NativePluginEditor::paint(juce::Graphics& g)
     );
     g.setGradientFill(headerGradient);
     g.fillRect(headerArea);
+
+    // ══ TITLE — Dreamcast style ════════════════════════════════
+    {
+        const auto titleR = titleLabel.getBounds().toFloat();
+        const juce::Colour dcOrange(0xFFFF8C32);
+        const juce::Font titleFont(juce::FontOptions(38.0f, juce::Font::bold | juce::Font::italic));
+        g.setFont(titleFont);
+        // Shadow
+        g.setColour(juce::Colours::black.withAlpha(0.55f));
+        g.drawText("ECHO GRAIN SYNTH", titleR.translated(2.0f, 2.5f), juce::Justification::centredLeft);
+        // Glow
+        g.setColour(dcOrange.withAlpha(0.18f));
+        g.drawText("ECHO GRAIN SYNTH", titleR.expanded(3.0f, 0.0f).translated(-1.5f, 0.0f), juce::Justification::centredLeft);
+        // Main text
+        g.setColour(dcOrange);
+        g.drawText("ECHO GRAIN SYNTH", titleR, juce::Justification::centredLeft);
+        // Cyan underline
+        g.setColour(cyanColor.withAlpha(0.82f));
+        g.fillRoundedRectangle(titleR.getX(), titleR.getBottom() - 2.5f,
+                               titleR.getWidth() * 0.70f, 2.2f, 1.1f);
+    }
+
+    // ══ SUBTITLE ═════════════════════════════════════════
+    {
+        const auto subR = subtitleLabel.getBounds().toFloat();
+        g.setFont(juce::Font(juce::FontOptions(13.0f, juce::Font::italic)));
+        g.setColour(magentaColor.withAlpha(0.94f));
+        g.drawText("Solar Bumper's Ethereal Granular Instrument",
+                   subR, juce::Justification::centredLeft);
+    }
+
+    // ══ SAMPLE NAME — cyan tag chip ══════════════════════════
+    {
+        const auto sampleR = sampleNameLabel.getBounds().toFloat().reduced(0.0f, 2.0f);
+        g.setColour(cyanColor.withAlpha(0.09f));
+        g.fillRoundedRectangle(sampleR, 5.0f);
+        g.setColour(cyanColor.withAlpha(0.40f));
+        g.drawRoundedRectangle(sampleR, 5.0f, 1.0f);
+        g.setFont(juce::Font(juce::FontOptions(11.0f)));
+        g.setColour(cyanColor.withAlpha(0.96f));
+        const auto rawText = sampleNameLabel.getText();
+        const auto displayText = rawText.isNotEmpty() ? rawText : "Drop a sample anywhere in the plugin";
+        g.drawText(displayText, sampleR.reduced(7.0f, 0.0f), juce::Justification::centredLeft);
+    }
     
     // Footer background
     auto footerArea = getLocalBounds().removeFromBottom(FOOTER_HEIGHT);
@@ -548,6 +765,88 @@ void NativePluginEditor::paint(juce::Graphics& g)
 
         g.setFont(juce::Font(juce::FontOptions(24.0f, juce::Font::bold)));
         g.drawText("Drop Sample To Load", overlay, juce::Justification::centred);
+    }
+
+    // ── MIDI Learn overlays ────────────────────────────────────────────────
+    auto& mlManager = audioProcessor.getMidiLearnManager();
+    const juce::String learningParam = mlManager.getLearningParamId();
+    const double timeNow = juce::Time::getMillisecondCounterHiRes() / 1000.0;
+
+    for (auto& [sliderPtr, paramId] : sliderParamIds)
+    {
+        if (sliderPtr == nullptr || !sliderPtr->isShowing()) continue;
+
+        const auto sliderBounds = getLocalArea (sliderPtr, sliderPtr->getLocalBounds()).toFloat();
+
+        if (paramId == learningParam)
+        {
+            // Pulsing red ring: waiting for CC
+            const float pulse = 0.55f + 0.45f * static_cast<float>(std::sin(timeNow * 5.0));
+            g.setColour(juce::Colour(0xFFFF3A3A).withAlpha(pulse));
+            g.drawRoundedRectangle(sliderBounds.expanded(3.0f), 8.0f, 2.2f);
+            g.setColour(juce::Colour(0xFFFF3A3A).withAlpha(pulse * 0.15f));
+            g.fillRoundedRectangle(sliderBounds.expanded(3.0f), 8.0f);
+        }
+        else
+        {
+            const int cc = mlManager.getMappedCC (paramId);
+            if (cc >= 0)
+            {
+                // Small cyan CC badge in top-right corner of slider
+                const juce::String badge = "CC" + juce::String(cc);
+                const float bw = 28.0f, bh = 12.0f;
+                const float bx = sliderBounds.getRight() - bw - 1.0f;
+                const float by = sliderBounds.getY() + 1.0f;
+                g.setColour(cyanColor.withAlpha(0.82f));
+                g.fillRoundedRectangle(bx, by, bw, bh, 4.0f);
+                g.setColour(juce::Colour(0xFF060D15));
+                g.setFont(juce::Font(juce::FontOptions(8.5f, juce::Font::bold)));
+                g.drawText(badge, juce::Rectangle<float>(bx, by, bw, bh), juce::Justification::centred);
+            }
+        }
+    }
+
+    // Status bar at the bottom when learning
+    if (learningParam.isNotEmpty())
+    {
+        const auto statusBar = getLocalBounds().removeFromBottom(22).toFloat();
+        g.setColour(juce::Colour(0xFFFF3A3A).withAlpha(0.88f));
+        g.fillRect(statusBar);
+        g.setColour(juce::Colours::white.withAlpha(0.96f));
+        g.setFont(juce::Font(juce::FontOptions(11.0f, juce::Font::bold)));
+        g.drawText("MIDI LEARN — Move a knob on your controller to map it to: " + learningParam
+                   + "   (Right-click to cancel)",
+                   statusBar.reduced(8.0f, 0.0f), juce::Justification::centredLeft);
+    }
+
+    // ── Peak meter ────────────────────────────────────────────────────────
+    if (!peakMeterBounds.isEmpty())
+    {
+        const auto meterF = peakMeterBounds.toFloat();
+        // Background track
+        g.setColour(juce::Colours::black.withAlpha(0.55f));
+        g.fillRoundedRectangle(meterF, 3.0f);
+        g.setColour(violetColor.withAlpha(0.25f));
+        g.drawRoundedRectangle(meterF, 3.0f, 1.0f);
+
+        // Level fill (green → yellow → red gradient)
+        const float fill = juce::jlimit(0.0f, 1.0f, currentPeakLevel);
+        if (fill > 0.001f)
+        {
+            const auto fillRect = meterF.withWidth(meterF.getWidth() * fill);
+            const juce::Colour levelColour = fill < 0.7f  ? juce::Colour(0xFF33CC66)
+                                           : fill < 0.9f  ? juce::Colour(0xFFFFCC00)
+                                                          : juce::Colour(0xFFFF3333);
+            juce::ColourGradient meterGrad(levelColour.brighter(0.15f), fillRect.getX(), 0.0f,
+                                           levelColour, fillRect.getRight(), 0.0f, false);
+            g.setGradientFill(meterGrad);
+            g.fillRoundedRectangle(fillRect, 3.0f);
+        }
+
+        // "OUT" label
+        g.setFont(juce::Font(juce::FontOptions(8.5f)));
+        g.setColour(violetColor.withAlpha(0.75f));
+        g.drawText("OUT", meterF.expanded(0.0f, 0.0f), juce::Justification::centredRight);
     }
 }
 
@@ -578,17 +877,21 @@ void NativePluginEditor::resized()
 
     const bool compactHeader = headerArea.getWidth() < 700;
 
-    titleLabel.setBounds(titleArea.removeFromTop(32));
-    subtitleLabel.setBounds(titleArea.removeFromTop(18));
+    titleLabel.setBounds(titleArea.removeFromTop(48));
+    subtitleLabel.setBounds(titleArea.removeFromTop(20));
     titleArea.removeFromTop(4);
-    sampleNameLabel.setBounds(titleArea.removeFromTop(20));
+    sampleNameLabel.setBounds(titleArea.removeFromTop(24));
 
     auto controlsRow1 = headerArea.removeFromTop(28);
     const int browseW = compactHeader ? 92 : 98;
     const int cpuModeW = compactHeader ? 70 : 78;
     const int maxGrainsW = compactHeader ? 200 : 240;
+    const int abW = 56; // A/B toggle
 
     loadSampleButton.setBounds(controlsRow1.removeFromLeft(browseW));
+    controlsRow1.removeFromLeft(4);
+    // A/B bypass: label "A" on left, toggle on right (looks like "A [B]")
+    abToggle.setBounds(controlsRow1.removeFromLeft(abW));
     controlsRow1.removeFromLeft(6);
     cpuModeCombo.setBounds(controlsRow1.removeFromLeft(cpuModeW));
     controlsRow1.removeFromLeft(6);
@@ -639,13 +942,13 @@ void NativePluginEditor::resized()
     //==========================================================================
     auto contentArea = bounds.reduced(MARGIN);
     
-    // Calculate column widths (ratios: 2.5 : 1.5 : 1.5 : 2.0)
-    float totalRatio = 2.5f + 1.5f + 1.5f + 2.0f;
+    // Calculate column widths (ratios: 2.4 : 1.8 : 1.8 : 2.0)
+    float totalRatio = 2.4f + 1.8f + 1.8f + 2.0f;
     int totalWidth = contentArea.getWidth() - (3 * columnGap);
     
-    int col1Width = static_cast<int>(totalWidth * (2.5f / totalRatio));
-    int col2Width = static_cast<int>(totalWidth * (1.5f / totalRatio));
-    int col3Width = static_cast<int>(totalWidth * (1.5f / totalRatio));
+    int col1Width = static_cast<int>(totalWidth * (2.4f / totalRatio));
+    int col2Width = static_cast<int>(totalWidth * (1.8f / totalRatio));
+    int col3Width = static_cast<int>(totalWidth * (1.8f / totalRatio));
     // col4Width uses remaining space (calculated implicitly in layout)
     
     //==========================================================================
@@ -658,6 +961,13 @@ void NativePluginEditor::resized()
     auto innerArea = col1Area.reduced(MARGIN * 2);
     innerArea.removeFromTop(groupLabelHeight);
 
+    // Toolbar: [FREEZE] [WindowType combo]
+    auto toolbarRow = innerArea.removeFromTop(22);
+    innerArea.removeFromTop(4);
+    freezeButton.setBounds(toolbarRow.removeFromLeft(70));
+    toolbarRow.removeFromLeft(6);
+    windowTypeCombo.setBounds(toolbarRow);
+
     auto adsrHeight = juce::jlimit(132, 186, innerArea.getHeight() / 2);
     auto adsrArea = innerArea.removeFromBottom(adsrHeight);
     innerArea.removeFromBottom(MARGIN);
@@ -668,7 +978,7 @@ void NativePluginEditor::resized()
     const int granularSizeFromHeight = (innerArea.getHeight() / 3) - labelReserve - 4;
     const int granularSizeFromWidth = granularColWidth - 6;
     const int granularCapacity = juce::jmin(granularSizeFromHeight, granularSizeFromWidth);
-    const int granularSliderSize = juce::jlimit(46, knobSize, granularCapacity);
+    const int granularSliderSize = juce::jlimit(46, 72, granularCapacity);
 
     auto placeSlider = [&](juce::Rectangle<int> cell, juce::Slider& slider)
     {
@@ -676,12 +986,16 @@ void NativePluginEditor::resized()
         slider.setBounds(cell.withSizeKeepingCentre(granularSliderSize, granularSliderSize));
     };
 
-    // Row 1: Grain Size / Density / Reverse
+    // Row 1: Grain Size / Size Spread / Density / Reverse (4 columns)
     auto row1 = innerArea.removeFromTop(granularRowHeight);
-    auto grainSizeArea = row1.removeFromLeft(granularColWidth);
+    const int col4Width_g = (row1.getWidth() - (3 * columnGap)) / 4;
+    auto grainSizeArea = row1.removeFromLeft(col4Width_g);
     placeSlider(grainSizeArea, grainSizeSlider);
     row1.removeFromLeft(columnGap);
-    auto densityArea = row1.removeFromLeft(granularColWidth);
+    auto grainSizeSpreadArea = row1.removeFromLeft(col4Width_g);
+    placeSlider(grainSizeSpreadArea, grainSizeSpreadSlider);
+    row1.removeFromLeft(columnGap);
+    auto densityArea = row1.removeFromLeft(col4Width_g);
     placeSlider(densityArea, densitySlider);
     row1.removeFromLeft(columnGap);
     placeSlider(row1, reverseSlider);
@@ -722,12 +1036,19 @@ void NativePluginEditor::resized()
     innerArea = col2Area.reduced(MARGIN * 2);
     innerArea.removeFromTop(groupLabelHeight);
 
-    auto lfoMonitorHeight = juce::jlimit(96, 150, innerArea.getHeight() / 3);
+    // LFO waveform shape combo
+    auto lfoWaveRow = innerArea.removeFromTop(22);
+    innerArea.removeFromTop(4);
+    lfoWaveformCombo.setBounds(lfoWaveRow);
+
+    // Give the LFO monitor a generous slice at the bottom (bigger waveform displays)
+    auto lfoMonitorHeight = juce::jlimit(100, 150, innerArea.getHeight() / 4);
     auto lfoMonitorArea = innerArea.removeFromBottom(lfoMonitorHeight);
     innerArea.removeFromBottom(MARGIN);
 
-    int sliderSize = knobSize;
-    int rowHeight = innerArea.getHeight() / 3;
+    // 4 LFO rows — distribute remaining height evenly
+    int rowHeight = innerArea.getHeight() / 4;
+    int sliderSize = juce::jlimit(44, 72, rowHeight - labelReserve - 6);
     
     // Position LFO (Freq + Depth)
     row1 = innerArea.removeFromTop(rowHeight);
@@ -761,6 +1082,16 @@ void NativePluginEditor::resized()
     auto densDepthArea = row3;
     densDepthArea.removeFromTop(labelReserve);
     densityLfoDepthSlider.setBounds(densDepthArea.withSizeKeepingCentre(sliderSize, sliderSize));
+
+    // GrainSize LFO (row 4)
+    auto row4 = innerArea.removeFromTop(rowHeight);
+    auto gszFreqArea = row4.removeFromLeft((row4.getWidth() - columnGap) / 2);
+    gszFreqArea.removeFromTop(labelReserve);
+    grainSizeLfoFreqSlider.setBounds(gszFreqArea.withSizeKeepingCentre(sliderSize, sliderSize));
+    row4.removeFromLeft(columnGap);
+    auto gszDepthArea = row4;
+    gszDepthArea.removeFromTop(labelReserve);
+    grainSizeLfoDepthSlider.setBounds(gszDepthArea.withSizeKeepingCentre(sliderSize, sliderSize));
     
     // LFO Monitor (remaining space)
     if (lfoMonitor)
@@ -778,64 +1109,77 @@ void NativePluginEditor::resized()
     innerArea = col3Area.reduced(MARGIN * 2);
     innerArea.removeFromTop(groupLabelHeight);
 
-    sliderSize = knobSize;
+    // 4 effect sections: Reverb (3 knobs), Formant (2 knobs), Master Gain (1 knob), Delay (3 knobs)
+    // Divide total height into 4 equal rows, compute knob size from row height
+    const int numEffectRows = 4;
+    const int effectGap = MARGIN;
+    const int totalEffectGaps = (numEffectRows - 1) * effectGap;
+    const int effectRowH = (innerArea.getHeight() - totalEffectGaps) / numEffectRows;
+    sliderSize = juce::jlimit(42, 68, effectRowH - labelReserve - 6);
 
-    const int effectControlRowHeight = sliderSize + labelReserve + 24;
-    auto effectRowsArea = innerArea.removeFromTop(2 * effectControlRowHeight + MARGIN * 2);
-
-    // Reverb controls (3 knobs - Room, Damping, Wet)
-    auto reverbRow = effectRowsArea.removeFromTop(effectControlRowHeight);
-    int knobWidth = (reverbRow.getWidth() - (columnGap * 2)) / 3;
-    
-    auto roomArea = reverbRow.removeFromLeft(knobWidth);
-    roomArea.removeFromTop(labelReserve);
-    reverbRoomSlider.setBounds(roomArea.withSizeKeepingCentre(sliderSize, sliderSize));
-    
-    reverbRow.removeFromLeft(columnGap);
-    auto dampingArea = reverbRow.removeFromLeft(knobWidth);
-    dampingArea.removeFromTop(labelReserve);
-    reverbDampingSlider.setBounds(dampingArea.withSizeKeepingCentre(sliderSize, sliderSize));
-    
-    reverbRow.removeFromLeft(columnGap);
-    auto wetArea = reverbRow;
-    wetArea.removeFromTop(labelReserve);
-    reverbWetSlider.setBounds(wetArea.withSizeKeepingCentre(sliderSize, sliderSize));
-    
-    effectRowsArea.removeFromTop(MARGIN * 2);
-
-    // Formant controls (2 knobs)
-    auto formantRow = effectRowsArea.removeFromTop(effectControlRowHeight);
-    auto formantFreqArea = formantRow.removeFromLeft((formantRow.getWidth() - columnGap) / 2);
-    formantFreqArea.removeFromTop(labelReserve);
-    formantFreqSlider.setBounds(formantFreqArea.withSizeKeepingCentre(sliderSize, sliderSize));
-    
-    formantRow.removeFromLeft(columnGap);
-    auto formantMixArea = formantRow;
-    formantMixArea.removeFromTop(labelReserve);
-    formantMixSlider.setBounds(formantMixArea.withSizeKeepingCentre(sliderSize, sliderSize));
-
-    // Master Gain — toujours affiché, centré dans une rangée dédiée
+    // Row 1 — Reverb: Room / Damping / Wet
     {
-        innerArea.removeFromTop(MARGIN);
-        auto masterRow = innerArea.removeFromTop(effectControlRowHeight);
-        auto masterArea = masterRow.withSizeKeepingCentre(sliderSize * 2, masterRow.getHeight());
-        masterArea.removeFromTop(labelReserve);
-        masterGainSlider.setBounds(masterArea.withSizeKeepingCentre(sliderSize, sliderSize));
+        auto row = innerArea.removeFromTop(effectRowH);
+        int w = (row.getWidth() - columnGap * 2) / 3;
+        auto a1 = row.removeFromLeft(w); a1.removeFromTop(labelReserve);
+        reverbRoomSlider.setBounds(a1.withSizeKeepingCentre(sliderSize, sliderSize));
+        row.removeFromLeft(columnGap);
+        auto a2 = row.removeFromLeft(w); a2.removeFromTop(labelReserve);
+        reverbDampingSlider.setBounds(a2.withSizeKeepingCentre(sliderSize, sliderSize));
+        row.removeFromLeft(columnGap);
+        auto a3 = row; a3.removeFromTop(labelReserve);
+        reverbWetSlider.setBounds(a3.withSizeKeepingCentre(sliderSize, sliderSize));
     }
+    innerArea.removeFromTop(effectGap);
 
-    // Glitch controls (2 knobs) — dans l'espace restant, si disponible
-    if (innerArea.getHeight() >= effectControlRowHeight)
+    // Row 2 — Formant: Freq / Mix
     {
-        innerArea.removeFromTop(MARGIN);
-        auto glitchRow = innerArea.removeFromTop(effectControlRowHeight);
-        auto glitchIntArea = glitchRow.removeFromLeft((glitchRow.getWidth() - columnGap) / 2);
-        glitchIntArea.removeFromTop(labelReserve);
-        glitchIntensitySlider.setBounds(glitchIntArea.withSizeKeepingCentre(sliderSize, sliderSize));
-        glitchRow.removeFromLeft(columnGap);
-        auto glitchRateArea = glitchRow;
-        glitchRateArea.removeFromTop(labelReserve);
-        glitchRateSlider.setBounds(glitchRateArea.withSizeKeepingCentre(sliderSize, sliderSize));
+        auto row = innerArea.removeFromTop(effectRowH);
+        int w = (row.getWidth() - columnGap) / 2;
+        auto a1 = row.removeFromLeft(w); a1.removeFromTop(labelReserve);
+        formantFreqSlider.setBounds(a1.withSizeKeepingCentre(sliderSize, sliderSize));
+        row.removeFromLeft(columnGap);
+        auto a2 = row; a2.removeFromTop(labelReserve);
+        formantMixSlider.setBounds(a2.withSizeKeepingCentre(sliderSize, sliderSize));
     }
+    innerArea.removeFromTop(effectGap);
+
+    // Row 3 — Master Gain (centred, larger knob for emphasis)
+    {
+        auto row = innerArea.removeFromTop(effectRowH);
+        const int bigKnob = juce::jlimit(sliderSize, sliderSize + 10, effectRowH - labelReserve - 2);
+        auto a = row; a.removeFromTop(labelReserve);
+        masterGainSlider.setBounds(a.withSizeKeepingCentre(bigKnob, bigKnob));
+    }
+    innerArea.removeFromTop(effectGap);
+
+    // Row 4 — Delay: Time / Feedback / Wet  +  BPM Sync + Subdivision
+    {
+        auto row = innerArea.removeFromTop(effectRowH);
+        int w = (row.getWidth() - columnGap * 2) / 3;
+        auto a1 = row.removeFromLeft(w); a1.removeFromTop(labelReserve);
+        delayTimeSlider.setBounds(a1.withSizeKeepingCentre(sliderSize, sliderSize));
+        row.removeFromLeft(columnGap);
+        auto a2 = row.removeFromLeft(w); a2.removeFromTop(labelReserve);
+        delayFeedbackSlider.setBounds(a2.withSizeKeepingCentre(sliderSize, sliderSize));
+        row.removeFromLeft(columnGap);
+        auto a3 = row; a3.removeFromTop(labelReserve);
+        delayWetSlider.setBounds(a3.withSizeKeepingCentre(sliderSize, sliderSize));
+    }
+    // Row 5 — BPM Sync toggle + Subdivision combo (compact strip)
+    {
+        auto row = innerArea.removeFromTop(20);
+        const int syncW = 76;
+        delayBpmSyncButton.setBounds(row.removeFromLeft(syncW));
+        row.removeFromLeft(4);
+        delaySubdivisionLabel.setBounds(row.removeFromLeft(38));
+        row.removeFromLeft(2);
+        delaySubdivisionCombo.setBounds(row.removeFromLeft(70));
+    }
+    innerArea.removeFromTop(2);
+
+    // Peak meter — thin vertical bar at the right edge of the effects column
+    peakMeterBounds = innerArea.removeFromTop(12).reduced(0, 2);
 
     contentArea.removeFromLeft(columnGap);
     
@@ -1002,6 +1346,25 @@ void NativePluginEditor::timerCallback()
     // Update sample name if changed
     if (audioProcessor.getSampleName() != sampleNameLabel.getText())
         sampleNameLabel.setText(audioProcessor.getSampleName(), juce::dontSendNotification);
+
+    // Poll for newly-learned MIDI CC mappings and refresh paint
+    {
+        juce::String learnedParam;
+        int learnedCC = -1;
+        if (audioProcessor.getMidiLearnManager().pollNewMapping (learnedParam, learnedCC))
+            repaint(); // refresh CC badges
+    }
+
+    // Poll peak level (exponential decay on UI side so meter falls smoothly)
+    {
+        const float newPeak = audioProcessor.getPeakLevel();
+        currentPeakLevel = std::max(newPeak, currentPeakLevel * 0.85f);
+        repaint(peakMeterBounds);
+    }
+
+    // Keep repainting while in learn mode (pulsing animation)
+    if (audioProcessor.getMidiLearnManager().isLearning())
+        repaint();
 }
 
 void NativePluginEditor::refreshPresetControls()

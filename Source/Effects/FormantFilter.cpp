@@ -1,82 +1,82 @@
 #include "FormantFilter.h"
+#include <cmath>
 
-// Approximate formant frequencies for vowels (F1, F2)
-const float FormantFilter::vowelFormants[5][2] = {
-    {730.0f, 1090.0f}, // A
-    {270.0f, 2290.0f}, // E
-    {390.0f, 1990.0f}, // I
-    {570.0f, 840.0f},  // O
-    {440.0f, 1020.0f}  // U
-};
+//==============================================================================
+FormantFilter::FormantFilter() = default;
 
-FormantFilter::FormantFilter()
+void FormantFilter::prepare(double sampleRate, int /*samplesPerBlock*/)
 {
+    sr = sampleRate;
+
+    // Reset all filter states
+    for (auto& ch : filters)
+        for (auto& bq : ch)
+            bq.reset();
+
+    updateCoefficients();
 }
 
-FormantFilter::~FormantFilter()
+//==============================================================================
+// setCoeffs: Audio EQ Cookbook BPF (constant 0 dB peak gain)
+//   w0    = 2π*f/Fs
+//   alpha = sin(w0) / (2*Q)
+//   b0    =  alpha / (1+alpha)
+//   b2    = -alpha / (1+alpha)
+//   a1    = -2*cos(w0) / (1+alpha)
+//   a2    = (1-alpha) / (1+alpha)
+void FormantFilter::setCoeffs(Biquad& bq, float freqHz, float q) noexcept
 {
+    freqHz = juce::jlimit(20.f, (float)(sr * 0.49), freqHz);
+    q      = juce::jmax(0.1f, q);
+
+    const float w0    = juce::MathConstants<float>::twoPi * freqHz / (float)sr;
+    const float cosW0 = std::cos(w0);
+    const float sinW0 = std::sin(w0);
+    const float alpha = sinW0 / (2.0f * q);
+    const float a0inv = 1.0f / (1.0f + alpha);
+
+    bq.b0 =  alpha * a0inv;
+    bq.b2 = -alpha * a0inv;
+    bq.a1 = -2.0f * cosW0 * a0inv;
+    bq.a2 = (1.0f - alpha) * a0inv;
 }
 
-void FormantFilter::prepare(double newSampleRate, int /*samplesPerBlock*/)
+void FormantFilter::updateCoefficients() noexcept
 {
-    sampleRate = newSampleRate;
-    
-    juce::dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = static_cast<juce::uint32>(512); // Use a default block size
-    spec.numChannels = 2;
-    
-    formantFilter1.prepare(spec);
-    formantFilter2.prepare(spec);
-    
-    updateFilter();
-}
+    // Frequency scale: ratio of requested F1 to the vowel's default F1
+    const float defaultF1  = kFreqs[vowel][0];
+    const float freqScale  = (defaultF1 > 0.f) ? (f1Hz / defaultF1) : 1.0f;
 
-void FormantFilter::processBlock(juce::AudioBuffer<float>& buffer)
-{
-    if (dryWetMix <= 0.0f)
-        return;
-        
-    // Create a copy for wet signal processing
-    juce::AudioBuffer<float> wetBuffer;
-    wetBuffer.makeCopyOf(buffer);
-    
-    // Process with formant filters
-    juce::dsp::AudioBlock<float> block(wetBuffer);
-    juce::dsp::ProcessContextReplacing<float> context(block);
-    
-    formantFilter1.process(context);
-    formantFilter2.process(context);
-    
-    // Mix dry and wet signals
-    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+    for (int f = 0; f < kFormants; ++f)
     {
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-        {
-            float drySignal = buffer.getSample(channel, sample);
-            float wetSignal = wetBuffer.getSample(channel, sample) * gain;
-            
-            float output = drySignal * (1.0f - dryWetMix) + wetSignal * dryWetMix;
-            buffer.setSample(channel, sample, output);
-        }
+        const float freq = juce::jlimit(20.f, 20000.f, kFreqs[vowel][f] * freqScale);
+        const float q    = kQBase[f] * qScale;
+
+        // Apply to both channels (same coefficients, independent state)
+        for (int ch = 0; ch < kChannels; ++ch)
+            setCoeffs(filters[ch][f], freq, q);
     }
 }
 
-void FormantFilter::setFormantFrequency(float frequency)
+//==============================================================================
+void FormantFilter::setFormantFrequency(float f1)
 {
-    formantFreq = juce::jlimit(100.0f, 5000.0f, frequency);
-    updateFilter();
+    f1Hz = juce::jlimit(100.f, 5000.f, f1);
+    updateCoefficients();
 }
 
-void FormantFilter::setBandwidth(float newBandwidth)
+void FormantFilter::setBandwidth(float bandwidthHz)
 {
-    bandwidth = juce::jlimit(10.0f, 500.0f, newBandwidth);
-    updateFilter();
+    // Approximate Q from F1 bandwidth: Q ≈ F1/BW
+    const float approxQ1 = juce::jmax(100.f, f1Hz) / juce::jmax(1.f, bandwidthHz);
+    // Store as a scale relative to the default Q (kQBase[0]=10)
+    qScale = juce::jlimit(0.2f, 10.f, approxQ1 / 10.f);
+    updateCoefficients();
 }
 
-void FormantFilter::setGain(float newGain)
+void FormantFilter::setGain(float g)
 {
-    gain = juce::jlimit(0.1f, 5.0f, newGain);
+    gain = juce::jlimit(0.0f, 5.0f, g);
 }
 
 void FormantFilter::setDryWetMix(float mix)
@@ -88,27 +88,41 @@ void FormantFilter::setVowel(int vowelType)
 {
     if (vowelType >= 0 && vowelType < 5)
     {
-        // Use the first formant frequency as the main frequency
-        formantFreq = vowelFormants[vowelType][0];
-        
-        // Set bandwidth based on vowel characteristics
-        bandwidth = 60.0f + static_cast<float>(vowelType) * 20.0f; // Varying bandwidth
-        
-        updateFilter();
+        vowel = vowelType;
+        updateCoefficients();
     }
 }
 
-void FormantFilter::updateFilter()
+//==============================================================================
+void FormantFilter::processBlock(juce::AudioBuffer<float>& buffer)
 {
-    if (sampleRate > 0)
+    if (dryWetMix < 0.001f) return;
+
+    const int numSamples = buffer.getNumSamples();
+    const int numCh      = juce::jmin(buffer.getNumChannels(), kChannels);
+
+    // Normalisation: 5 parallel filters, scale output so unity gain at each peak
+    // sums to a reasonable level without boosting excessively
+    const float wetScale = gain / (float)kFormants;
+
+    for (int ch = 0; ch < numCh; ++ch)
     {
-        float Q = formantFreq / bandwidth;
-        
-        // Create bandpass filters for formants
-        coefficients1 = juce::dsp::IIR::Coefficients<float>::makeBandPass(sampleRate, formantFreq, Q);
-        coefficients2 = juce::dsp::IIR::Coefficients<float>::makeBandPass(sampleRate, formantFreq * 1.5f, Q * 0.8f);
-        
-        formantFilter1.coefficients = coefficients1;
-        formantFilter2.coefficients = coefficients2;
+        float* data = buffer.getWritePointer(ch);
+
+        for (int i = 0; i < numSamples; ++i)
+        {
+            const float x = data[i];
+
+            // Sum 5 parallel BPFs
+            float wet = 0.f;
+            for (int f = 0; f < kFormants; ++f)
+                wet += filters[ch][f].process(x);
+
+            wet *= wetScale;
+
+            data[i] = x * (1.f - dryWetMix) + wet * dryWetMix;
+        }
     }
 }
+
+

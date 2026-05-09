@@ -41,8 +41,11 @@ public:
     
 private:
     void timerCallback() override;
+    void mouseDown (const juce::MouseEvent& e) override;
     void setupSlider(juce::Slider& slider, juce::Label& label, const juce::String& labelText,
                      juce::NormalisableRange<double> range, double defaultValue);
+    void attachAndRegister (const juce::String& paramId, juce::Slider& slider);
+    void showMidiLearnMenu (juce::Slider& slider);
     void styleSection(juce::GroupComponent& group, juce::Colour accent);
     void applyXYPadMappings(juce::Point<float> normalizedPosition);
     void loadSampleFile();
@@ -57,6 +60,9 @@ private:
     
     // Processor reference
     EchoGrainSynthAudioProcessor& audioProcessor;
+
+    // MIDI Learn: slider → APVTS paramId
+    std::unordered_map<juce::Slider*, juce::String> sliderParamIds;
     
     //==============================================================================
     // UI SECTIONS (5 zones + header + footer)
@@ -80,13 +86,18 @@ private:
     std::unique_ptr<WaveformView> waveformView;
     std::unique_ptr<juce::FileChooser> fileChooser;
     bool isDraggingSample = false;
+    juce::TextButton abToggle;   // A/B bypass: hear the dry original sample (TextButton with toggle)
     
     // === COLUMN 1: CYAN - Granular Controls ===
     juce::GroupComponent grainGroup;
-    
-    // Row 1: Grain Size + Density
-    juce::Slider grainSizeSlider, densitySlider;
-    juce::Label grainSizeLabel, densityLabel;
+
+    // Granular toolbar: freeze + window type
+    juce::TextButton      freezeButton;
+    juce::ComboBox        windowTypeCombo;
+
+    // Row 1: Grain Size + Grain Size Spread + Density + Reverse
+    juce::Slider grainSizeSlider, grainSizeSpreadSlider, densitySlider;
+    juce::Label  grainSizeLabel,  grainSizeSpreadLabel,  densityLabel;
     
     // Row 2: Position + Pitch
     juce::Slider positionSlider, pitchSlider;
@@ -109,7 +120,10 @@ private:
     
     // === COLUMN 2: ORANGE - LFO Controls ===
     juce::GroupComponent lfoGroup;
-    
+
+    // LFO shape selector
+    juce::ComboBox lfoWaveformCombo;
+
     juce::Slider positionLfoFreqSlider, positionLfoDepthSlider;
     juce::Label positionLfoFreqLabel, positionLfoDepthLabel;
     
@@ -118,6 +132,10 @@ private:
     
     juce::Slider densityLfoFreqSlider, densityLfoDepthSlider;
     juce::Label densityLfoFreqLabel, densityLfoDepthLabel;
+
+    // GrainSize LFO
+    juce::Slider grainSizeLfoFreqSlider, grainSizeLfoDepthSlider;
+    juce::Label  grainSizeLfoFreqLabel,  grainSizeLfoDepthLabel;
     
     std::unique_ptr<LfoMonitorComponent> lfoMonitor;
     
@@ -132,13 +150,22 @@ private:
     juce::Slider formantFreqSlider, formantMixSlider;
     juce::Label formantFreqLabel, formantMixLabel;
 
+    // Delay
+    juce::Slider delayTimeSlider, delayFeedbackSlider, delayWetSlider;
+    juce::Label  delayTimeLabel,  delayFeedbackLabel,  delayWetLabel;
+    juce::ToggleButton delayBpmSyncButton;
+    juce::ComboBox     delaySubdivisionCombo;
+    juce::Label        delaySubdivisionLabel;
+
+    // Peak meter (drawn in paint, value polled in timer)
+    float currentPeakLevel = 0.0f;
+    juce::Rectangle<int> peakMeterBounds;
+
     // Master Gain
     juce::Slider masterGainSlider;
     juce::Label masterGainLabel;
 
     // Glitch
-    juce::Slider glitchIntensitySlider, glitchRateSlider;
-    juce::Label glitchIntensityLabel, glitchRateLabel;
     
     // === COLUMN 4: VERT - XY Pad + Mapping ===
     juce::GroupComponent xyGroup;
@@ -165,9 +192,13 @@ private:
     //==============================================================================
     // APVTS Attachments (ownership)
     using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+    using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
+    using ComboAttachment  = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
     std::vector<std::unique_ptr<SliderAttachment>> sliderAttachments;
     std::unique_ptr<SliderAttachment> maxGrainsAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> cpuModeAttachment;
+    std::unique_ptr<ComboAttachment> cpuModeAttachment;
+    std::unique_ptr<ButtonAttachment> delayBpmSyncAttachment;
+    std::unique_ptr<ComboAttachment>  delaySubdivisionAttachment;
     PresetManager presetManager;
     EchoGrainLookAndFeel lookAndFeel;
     
@@ -183,8 +214,8 @@ private:
     // Layout constants
     static constexpr int MIN_WIDTH = 1000;
     static constexpr int MIN_HEIGHT = 600;
-    static constexpr int DEFAULT_WIDTH = 1200;
-    static constexpr int DEFAULT_HEIGHT = 700;
+    static constexpr int DEFAULT_WIDTH = 1440;
+    static constexpr int DEFAULT_HEIGHT = 860;
     static constexpr int HEADER_HEIGHT = 248;
     static constexpr int FOOTER_HEIGHT = 0;
     static constexpr int MARGIN = 8;

@@ -4,7 +4,8 @@
 #include "GrainEngine.h"
 #include "Effects/ReverbEffect.h"
 #include "Effects/FormantFilter.h"
-#include "Effects/GlitchEffect.h"
+#include "Effects/DelayEffect.h"
+#include "MidiLearnManager.h"
 
 // Forward declaration
 class EchoGrainSynthAudioProcessorEditor;
@@ -37,6 +38,7 @@ public:
     bool acceptsMidi() const override;
     bool producesMidi() const override;
     bool isMidiEffect() const override;
+    bool isMPEEnabled() const { return true; }
     double getTailLengthSeconds() const override;
 
     //==============================================================================
@@ -64,6 +66,10 @@ public:
     bool wasStateRestoredFromProject() const { return stateRestoredFromProject; }
     void setXYMidiLinkEnabled(bool enabled) { xyMidiLinkEnabled = enabled; }
     bool isXYMidiLinkEnabled() const { return xyMidiLinkEnabled; }
+
+    // A/B bypass: when enabled, outputs the loaded sample directly (no granular / effects)
+    void setABBypass(bool enabled) { if (enabled && !abBypassEnabled.load()) abPlaybackPosition.store(0); abBypassEnabled.store(enabled); }
+    bool isABBypassEnabled() const { return abBypassEnabled.load(); }
     
     // Removed Foleys GUI Magic - migrated to React-JUCE
     
@@ -73,7 +79,7 @@ public:
     GrainEngine* getGrainEngine() { return grainEngine.get(); }
     ReverbEffect& getReverbEffect() { return reverbEffect; }
     FormantFilter& getFormantFilter() { return formantFilter; }
-    GlitchEffect& getGlitchEffect() { return glitchEffect; }
+    DelayEffect& getDelayEffect() { return delayEffect; }
     
     // Helper method for UI components
     int getActiveGrainCount() const { return grainEngine ? grainEngine->getActiveGrains() : 0; }
@@ -98,27 +104,39 @@ public:
     void processSidechain(const juce::AudioBuffer<float>& sidechainBuffer);
     void recordAudio(const juce::AudioBuffer<float>& buffer);
     
-    // MIDI-triggered granular synthesis
-    void processMidiTriggeredGrains(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages);
+    // MIDI keyboard state for UI
     juce::MidiKeyboardState& getKeyboardState() noexcept { return keyboardState; }
+
+    // Output peak level (for meter UI)
+    float getPeakLevel() const noexcept { return outputPeakLevel.load(std::memory_order_relaxed); }
+
+    // WAV export recording
+    void startWavRecording (const juce::File& destFile);
+    void stopWavRecording();
+    bool isRecordingWav() const noexcept { return isWavRecording.load(); }
+
+    MidiLearnManager& getMidiLearnManager() { return midiLearnManager; }
     
 private:
     //==============================================================================
-    juce::Synthesiser synthesiser;
     std::unique_ptr<GrainEngine> grainEngine;
+    juce::MPEInstrument       mpeInstrument;   // Per-note pitch/pressure/slide (MPE)
     
     // Effects
     ReverbEffect reverbEffect;
     FormantFilter formantFilter;
-    GlitchEffect glitchEffect;
+    DelayEffect  delayEffect;
 
     // Per-instance MIDI state (must NOT be static — each instance is independent)
-    std::array<bool, 128> activeNotes {};
+    std::array<bool,  128> activeNotes {};
+    std::array<float, 128> noteVelocities {}; // MIDI velocity per active note
     float currentPitchWheel = 0.0f;
     
-    // Targeted smoothing for click-prone effect mix controls.
+    // Targeted smoothing for click-prone controls.
     juce::LinearSmoothedValue<float> smoothedReverbWet;
     juce::LinearSmoothedValue<float> smoothedFormantMix;
+    juce::LinearSmoothedValue<float> smoothedDelayWet;
+    juce::LinearSmoothedValue<float> smoothedMasterGain;
     
     // Parameter management
     juce::AudioProcessorValueTreeState apvts;
@@ -129,23 +147,51 @@ private:
     juce::String sampleName;
     juce::AudioBuffer<float> loadedSample;
     
-    // LFO system
+    // LFO system  (0=Sine, 1=Square, 2=Triangle, 3=S&H)
     struct LFO
     {
         float phase = 0.0f;
         float frequency = 1.0f;
         float depth = 0.0f;
-        
+        int   waveform = 0;
+
+        // S&H state (private to struct)
+        float sAndHValue = 0.0f;
+        std::mt19937 rng { std::random_device{}() };
+        std::uniform_real_distribution<float> dist { -1.0f, 1.0f };
+
         float getNextValue(float sampleRate)
         {
-            float value = std::sin(phase * 2.0f * juce::MathConstants<float>::pi);
+            float value = 0.0f;
+            switch (waveform)
+            {
+                case 1:  // Square
+                    value = phase < 0.5f ? 1.0f : -1.0f;
+                    break;
+                case 2:  // Triangle
+                    value = phase < 0.5f ? (4.0f * phase - 1.0f) : (3.0f - 4.0f * phase);
+                    break;
+                case 3:  // Sample & Hold (updated at each cycle)
+                    value = sAndHValue;
+                    break;
+                default: // Sine
+                    value = std::sin(phase * juce::MathConstants<float>::twoPi);
+                    break;
+            }
+
             phase += frequency / sampleRate;
-            if (phase >= 1.0f) phase -= 1.0f;
+            if (phase >= 1.0f)
+            {
+                phase -= 1.0f;
+                if (waveform == 3)
+                    sAndHValue = dist(rng);
+            }
+
             return value * depth;
         }
     };
     
-    LFO positionLFO, pitchLFO, densityLFO;
+    LFO positionLFO, pitchLFO, densityLFO, grainSizeLFO;
     
     // Audio input recording
     juce::AudioBuffer<float> recordingBuffer;
@@ -164,9 +210,19 @@ private:
     // UI keyboard state to allow note playing directly from the plugin editor.
     juce::MidiKeyboardState keyboardState;
     
-    // Sidechain processing (removed duplicate)
+    // Sidechain processing
     juce::AudioBuffer<float> sidechainBuffer;
     bool hasSidechain = false;
+
+    // MPE expression tracking (pressure and slide, updated from MIDI events)
+    float mpePressure = 0.5f; // aftertouch / channel pressure (0..1, 0.5 = neutral)
+    float mpeSlide    = 0.5f; // CC74 timbre / slide (0..1, 0.5 = neutral)
+
+    // Output peak meter (written audio thread, read UI thread)
+    std::atomic<float> outputPeakLevel { 0.0f };
+
+    // Sample-swap lock: write-lock in loadSample (msg thread), read-lock in processBlock
+    juce::ReadWriteLock sampleLock;
     
     // Sample data persistence
     struct SampleData
@@ -191,6 +247,17 @@ private:
     juce::String selectedPresetName { "Init Empty" };
     bool xyMidiLinkEnabled = true;
     bool stateRestoredFromProject = false;
+
+    // A/B bypass state (accessed from both UI and audio threads)
+    std::atomic<bool> abBypassEnabled { false };
+    std::atomic<int>  abPlaybackPosition { 0 };
+
+    MidiLearnManager midiLearnManager;
+
+    // WAV export recording (background thread, lock-free FIFO to writer)
+    juce::TimeSliceThread                                  wavRecordThread { "WavRecord" };
+    std::unique_ptr<juce::AudioFormatWriter::ThreadedWriter> wavWriter;
+    std::atomic<bool>                                      isWavRecording  { false };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EchoGrainSynthAudioProcessor)
 };

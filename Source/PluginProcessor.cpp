@@ -1,7 +1,5 @@
 #include "PluginProcessor.h"
 #include "NativePluginEditor.h"  // Changed from React-JUCE to Native JUCE UI
-#include "Synth/GranularVoice.h"
-#include "Synth/GranularSound.h"
 
 //==============================================================================
 EchoGrainSynthAudioProcessor::EchoGrainSynthAudioProcessor()
@@ -23,13 +21,13 @@ EchoGrainSynthAudioProcessor::EchoGrainSynthAudioProcessor()
     formatManager.registerBasicFormats();
     grainEngine = std::make_unique<GrainEngine>();
     
-    // Initialize synthesizer with granular voices for MIDI input
-    for (int i = 0; i < 16; ++i)
-        synthesiser.addVoice(new GranularVoice());
-        
-    // Add a granular sound to the synthesizer
-    synthesiser.addSound(new GranularSound());
-        
+    // Configure MPE: lower zone occupies member channels 2-16 (15 channels)
+    {
+        juce::MPEZoneLayout layout;
+        layout.setLowerZone (15);
+        mpeInstrument.setZoneLayout (layout);
+    }
+    
     // Initialize recording buffer (10 seconds max at 44.1kHz)
     recordingBuffer.setSize(2, static_cast<int>(44100 * 10));
     recordingSamplePosition = 0;
@@ -40,6 +38,39 @@ EchoGrainSynthAudioProcessor::EchoGrainSynthAudioProcessor()
 
 EchoGrainSynthAudioProcessor::~EchoGrainSynthAudioProcessor()
 {
+    stopWavRecording();
+    wavRecordThread.stopThread (2000);
+}
+
+//==============================================================================
+void EchoGrainSynthAudioProcessor::startWavRecording (const juce::File& destFile)
+{
+    stopWavRecording(); // close any previous session
+
+    const double sr  = getSampleRate();
+    const int    ch  = getTotalNumOutputChannels();
+    if (sr <= 0.0 || ch <= 0) return;
+
+    destFile.deleteFile();
+    auto* stream = destFile.createOutputStream().release();
+    if (stream == nullptr) return;
+
+    juce::WavAudioFormat wavFmt;
+    auto* writer = wavFmt.createWriterFor (stream, sr, (unsigned int) ch, 24, {}, 0);
+    if (writer == nullptr) { delete stream; return; }
+
+    if (!wavRecordThread.isThreadRunning())
+        wavRecordThread.startThread();
+
+    // ThreadedWriter owns the writer (and the stream through it)
+    wavWriter = std::make_unique<juce::AudioFormatWriter::ThreadedWriter> (writer, wavRecordThread, 32768);
+    isWavRecording.store (true);
+}
+
+void EchoGrainSynthAudioProcessor::stopWavRecording()
+{
+    isWavRecording.store (false);
+    wavWriter.reset(); // flushes and closes the file cleanly
 }
 
 //==============================================================================
@@ -77,7 +108,9 @@ bool EchoGrainSynthAudioProcessor::isMidiEffect() const
 
 double EchoGrainSynthAudioProcessor::getTailLengthSeconds() const
 {
-    return 0.0;
+    // Report the maximum possible tail: delay (up to 2 s) + reverb decay (~2 s).
+    // This prevents hosts from cutting audio too early when notes stop.
+    return 4.0;
 }
 
 int EchoGrainSynthAudioProcessor::getNumPrograms()
@@ -111,10 +144,14 @@ void EchoGrainSynthAudioProcessor::changeProgramName (int index, const juce::Str
 void EchoGrainSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     grainEngine->prepareToPlay(sampleRate, samplesPerBlock);
-    synthesiser.setCurrentPlaybackSampleRate(sampleRate);
+    reverbEffect.prepare(sampleRate, samplesPerBlock);
+    formantFilter.prepare(sampleRate, samplesPerBlock);
+    delayEffect.prepare(sampleRate, samplesPerBlock);
 
     smoothedReverbWet.reset(sampleRate, 0.03);
     smoothedFormantMix.reset(sampleRate, 0.02);
+    smoothedDelayWet.reset(sampleRate, 0.025);
+    smoothedMasterGain.reset(sampleRate, 0.02);
 
     const float initialReverbWet = (apvts.getRawParameterValue("reverbWet") != nullptr)
         ? apvts.getRawParameterValue("reverbWet")->load()
@@ -125,17 +162,27 @@ void EchoGrainSynthAudioProcessor::prepareToPlay (double sampleRate, int samples
         ? apvts.getRawParameterValue("formantMix")->load()
         : 0.0f;
     smoothedFormantMix.setCurrentAndTargetValue(initialFormantMix);
-    
-    // Prepare effects
-    reverbEffect.prepare(sampleRate, samplesPerBlock);
-    formantFilter.prepare(sampleRate, samplesPerBlock);
-    glitchEffect.prepare(sampleRate, samplesPerBlock);
+
+    const float initialDelayWet = (apvts.getRawParameterValue("delayWet") != nullptr)
+        ? apvts.getRawParameterValue("delayWet")->load()
+        : 0.0f;
+    smoothedDelayWet.setCurrentAndTargetValue(initialDelayWet);
+
+    const float initialMasterGain = (apvts.getRawParameterValue("masterGain") != nullptr)
+        ? apvts.getRawParameterValue("masterGain")->load()
+        : 1.0f;
+    smoothedMasterGain.setCurrentAndTargetValue(initialMasterGain);
 }
 
 void EchoGrainSynthAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
+    if (grainEngine != nullptr)
+        grainEngine->reset();
+    mpeInstrument.setZoneLayout(mpeInstrument.getZoneLayout()); // clears all active notes
+    std::fill(activeNotes.begin(),    activeNotes.end(),    false);
+    std::fill(noteVelocities.begin(), noteVelocities.end(), 0.0f);
+    mpePressure = 0.5f;
+    mpeSlide    = 0.5f;
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -212,6 +259,67 @@ void EchoGrainSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     }
 
     // Update LFOs and apply modulation
+    // A/B bypass: loop the loaded sample at the current position param (meaningful A/B comparison)
+    if (abBypassEnabled.load())
+    {
+        buffer.clear();
+        const juce::ScopedTryReadLock tryRead(sampleLock);
+        if (!tryRead.isLocked())
+            return; // sample is being swapped, skip this block safely
+        const int numSamplesTotal = loadedSample.getNumSamples();
+        if (numSamplesTotal > 0)
+        {
+            float masterGain = 1.0f;
+            if (auto* gainParam = apvts.getRawParameterValue("masterGain"))
+                masterGain = gainParam->load();
+
+            // Loop a 1-second window around the current position param
+            float posNorm = 0.0f;
+            if (auto* posParam = apvts.getRawParameterValue("position"))
+                posNorm = posParam->load();
+
+            const int windowSamples = juce::jmin(numSamplesTotal,
+                static_cast<int>(sampleRateForProcessing));
+            const int windowStart = juce::jlimit(0,
+                juce::jmax(0, numSamplesTotal - windowSamples),
+                static_cast<int>(posNorm * static_cast<float>(numSamplesTotal - windowSamples)));
+
+            int pos = abPlaybackPosition.load();
+            for (int i = 0; i < numSamples; ++i)
+            {
+                const int srcIdx = windowStart + (pos % windowSamples);
+                for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+                {
+                    const int srcCh = juce::jmin(ch, loadedSample.getNumChannels() - 1);
+                    buffer.getWritePointer(ch)[i] = loadedSample.getReadPointer(srcCh)[srcIdx] * masterGain;
+                }
+                ++pos;
+            }
+            abPlaybackPosition.store(pos % windowSamples);
+        }
+        return;
+    }
+
+    // === New granular parameters ===
+    if (auto* freezeParam = apvts.getRawParameterValue("freeze"))
+        grainEngine->setFreeze(freezeParam->load() > 0.5f);
+
+    if (auto* windowParam = apvts.getRawParameterValue("windowType"))
+        grainEngine->setWindowType(static_cast<GrainEngine::WindowType>(juce::roundToInt(windowParam->load())));
+
+    if (auto* gsSpreadadParam = apvts.getRawParameterValue("grainSizeSpread"))
+        grainEngine->setGrainSizeSpread(gsSpreadadParam->load());
+
+    // LFO waveform shape (applies to all LFOs)
+    int lfoWave = 0;
+    if (auto* lfoWaveParam = apvts.getRawParameterValue("lfoWaveform"))
+        lfoWave = juce::roundToInt(lfoWaveParam->load());
+    positionLFO.waveform  = lfoWave;
+    pitchLFO.waveform     = lfoWave;
+    densityLFO.waveform   = lfoWave;
+    grainSizeLFO.waveform = lfoWave;
+
+    // Update LFOs and apply modulation
     if (auto* positionParam = apvts.getRawParameterValue("position"))
     {
         float lfoMod = positionLFO.getNextValue(static_cast<float>(sampleRateForProcessing));
@@ -236,6 +344,17 @@ void EchoGrainSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         const float lfoAmount = ecoMode ? 2.0f : 3.0f;
         float modifiedDensity = juce::jlimit(0.1f, densityCap, *densityParam + lfoMod * lfoAmount);
         grainEngine->setGrainDensity(modifiedDensity);
+    }
+
+    // GrainSize LFO
+    if (auto* gsParam = apvts.getRawParameterValue("grainSize"))
+    {
+        if (auto* gsLfoFreqP = apvts.getRawParameterValue("grainSizeLfoFreq"))
+            grainSizeLFO.frequency = gsLfoFreqP->load();
+        if (auto* gsLfoDepthP = apvts.getRawParameterValue("grainSizeLfoDepth"))
+            grainSizeLFO.depth = gsLfoDepthP->load();
+        const float lfoMod = grainSizeLFO.getNextValue(static_cast<float>(sampleRateForProcessing));
+        grainEngine->setGrainSize(juce::jlimit(10.0f, 600.0f, gsParam->load() + lfoMod));
     }
 
     if (auto* maxGrainsParam = apvts.getRawParameterValue("maxActiveGrains"))
@@ -281,6 +400,7 @@ void EchoGrainSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         densityLFO.frequency = *densityLfoFreqParam;
     if (auto* densityLfoDepthParam = apvts.getRawParameterValue("densityLfoDepth"))
         densityLFO.depth = *densityLfoDepthParam;
+    // grainSizeLFO freq/depth are read inside the grainSize LFO block above
 
     // Update effects parameters
     if (auto* reverbRoomParam = apvts.getRawParameterValue("reverbRoom"))
@@ -316,6 +436,10 @@ void EchoGrainSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         pitchBendRange = *pitchBendRangeParam;
     bool noteOnReceived = false;
     
+    // Feed all MIDI events into the MPE instrument for per-note expression tracking
+    for (const auto& meta : midiMessages)
+        mpeInstrument.processNextMidiEvent(meta.getMessage());
+
     // Process MIDI messages for note-triggered granular synthesis
     for (const auto metadata : midiMessages)
     {
@@ -323,17 +447,42 @@ void EchoGrainSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         
         if (message.isNoteOn())
         {
-            int noteNumber = message.getNoteNumber();
-            activeNotes[noteNumber] = true;
+            int   noteNumber = message.getNoteNumber();
+            float velocity   = message.getFloatVelocity();
+            activeNotes[noteNumber]    = true;
+            noteVelocities[noteNumber] = velocity;
             noteOnReceived = true;
 
-            // Trigger an immediate grain for responsiveness.
-            grainEngine->triggerGrain();
+            // Forward velocity to grain engine so grains reflect key force
+            grainEngine->setNoteVelocity(velocity);
+            // Trigger a note-tracked grain immediately for responsiveness
+            grainEngine->triggerGrainForNote(noteNumber, velocity);
         }
         else if (message.isNoteOff())
         {
             int noteNumber = message.getNoteNumber();
-            activeNotes[noteNumber] = false;
+            activeNotes[noteNumber]    = false;
+            noteVelocities[noteNumber] = 0.0f;
+            grainEngine->releaseNote(noteNumber);
+        }
+        else if (message.isAftertouch())
+        {
+            // Per-note pressure (MPE member channel aftertouch)
+            const float v = message.getAfterTouchValue() / 127.0f;
+            mpePressure = juce::jmax(mpePressure, v);
+        }
+        else if (message.isChannelPressure())
+        {
+            // Channel-wide pressure (standard MIDI and MPE master channel)
+            mpePressure = message.getChannelPressureValue() / 127.0f;
+        }
+        else if (message.isController())
+        {
+            if (message.getControllerNumber() == 74) // MPE slide / timbre
+                mpeSlide = message.getControllerValue() / 127.0f;
+            // All CCs (including 74) can still be MIDI-learned to any parameter
+            midiLearnManager.handleCC (message.getControllerNumber(),
+                                       message.getControllerValue(), apvts);
         }
         else if (message.isPitchWheel())
         {
@@ -341,12 +490,15 @@ void EchoGrainSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         }
     }
 
+    // Find highest active note and velocity-weighted note for pitch/expression
     int highestActiveNote = -1;
+    float highestNoteVelocity = 0.0f;
     for (int i = 127; i >= 0; --i)
     {
         if (activeNotes[i])
         {
             highestActiveNote = i;
+            highestNoteVelocity = noteVelocities[i];
             break;
         }
     }
@@ -358,14 +510,37 @@ void EchoGrainSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         const float targetRatio = std::pow(2.0f, (baseSemitones + bendSemitones) / 12.0f);
 
         grainEngine->setMIDIPitchRatio(targetRatio);
+        grainEngine->setNoteVelocity(highestNoteVelocity);
         grainEngine->setMIDITriggered(false);
-
-        if (noteOnReceived)
-            grainEngine->triggerGrain();
     }
     else
     {
+        // No notes held: reset velocity to full and return to free-running mode
+        grainEngine->setNoteVelocity(1.0f);
         grainEngine->setMIDITriggered(true);
+    }
+
+    // === MPE per-note expression modulation ===
+    // Decay pressure toward neutral when no notes are held
+    if (highestActiveNote < 0)
+        mpePressure = mpePressure * 0.995f + 0.5f * 0.005f; // slow decay back to 0.5
+
+    if (highestActiveNote >= 0)
+    {
+        // Pressure (0..1, neutral=0.5): scale density in ±50% range
+        if (auto* densityParam = apvts.getRawParameterValue("density"))
+        {
+            const float baseDensity = densityParam->load();
+            const float mpeDensity  = baseDensity * (0.5f + mpePressure);
+            grainEngine->setGrainDensity(juce::jlimit(0.1f, 30.0f, mpeDensity));
+        }
+        // Slide CC74 (0..1, neutral=0.5): shift read position ±0.25
+        if (auto* posParam = apvts.getRawParameterValue("position"))
+        {
+            const float basePos = posParam->load();
+            const float mpePos  = basePos + (mpeSlide - 0.5f) * 0.5f;
+            grainEngine->setPosition(juce::jlimit(0.0f, 1.0f, mpePos));
+        }
     }
     
     // Always process grain engine
@@ -378,33 +553,67 @@ void EchoGrainSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     if (smoothedFormantMix.getCurrentValue() > 0.0001f || smoothedFormantMix.isSmoothing())
         formantFilter.processBlock(buffer);
 
-    // Glitch
-    if (auto* intensityParam = apvts.getRawParameterValue("glitchIntensity"))
+    // Delay
+    if (auto* delayWetParam = apvts.getRawParameterValue("delayWet"))
     {
-        const float glitchIntensity = intensityParam->load();
-        glitchEffect.setIntensity(glitchIntensity);
-        if (auto* rateParam = apvts.getRawParameterValue("glitchRate"))
-            glitchEffect.setRate(rateParam->load());
-        if (glitchIntensity > 0.001f)
-            glitchEffect.processBlock(buffer);
+        smoothedDelayWet.setTargetValue(delayWetParam->load());
+        delayEffect.setWetLevel(smoothedDelayWet.skip(numSamples));
+    }
+    if (auto* delayTimeParam = apvts.getRawParameterValue("delayTimeMs"))
+        delayEffect.setDelayTimeMs(delayTimeParam->load());
+    if (auto* delayFbParam = apvts.getRawParameterValue("delayFeedback"))
+        delayEffect.setFeedback(delayFbParam->load());
+    {
+        bool bpmSync = false;
+        int  subdivision = 2; // default 1/4
+        if (auto* syncParam = apvts.getRawParameterValue("delayBpmSync"))
+            bpmSync = syncParam->load() > 0.5f;
+        if (auto* subdivParam = apvts.getRawParameterValue("delaySubdivision"))
+            subdivision = juce::roundToInt(subdivParam->load());
+        delayEffect.setBpmSync(bpmSync, currentBPM, subdivision);
+    }
+    if (smoothedDelayWet.getCurrentValue() > 0.0001f || smoothedDelayWet.isSmoothing())
+        delayEffect.processBlock(buffer);
+
+    // MASTER GAIN & SOFT CLIPPER (per-sample smoothed to eliminate zippering on automation)
+    if (auto* gainParam = apvts.getRawParameterValue("masterGain"))
+        smoothedMasterGain.setTargetValue(gainParam->load());
+
+    for (int i = 0; i < buffer.getNumSamples(); ++i)
+    {
+        const float gain = smoothedMasterGain.getNextValue();
+        for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+        {
+            float x = buffer.getWritePointer(ch)[i] * gain;
+            // Soft clipper (tanh approx): y ≈ x*(27+x²)/(27+9x²)
+            float x2 = x * x;
+            buffer.getWritePointer(ch)[i] = juce::jlimit(-1.0f, 1.0f, x * (27.0f + x2) / (27.0f + 9.0f * x2));
+        }
     }
 
-    // MASTER GAIN & SOFT CLIPPER
-    float masterGain = 1.0f;
-    if (auto* gainParam = apvts.getRawParameterValue("masterGain"))
-        masterGain = gainParam->load();
-
-    for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+    // Update output peak level for the UI meter (decaying envelope follower)
     {
-        float* data = buffer.getWritePointer(ch);
-        for (int i = 0; i < buffer.getNumSamples(); ++i)
+        float blockPeak = 0.0f;
+        for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+            blockPeak = juce::jmax(blockPeak, buffer.getMagnitude(ch, 0, buffer.getNumSamples()));
+        // 60 Hz decay pole: release ~= 300 ms @ 60 fps
+        const float prev = outputPeakLevel.load(std::memory_order_relaxed);
+        outputPeakLevel.store(blockPeak > prev ? blockPeak : prev * 0.9998f,
+                              std::memory_order_relaxed);
+    }
+
+    // WAV export — push current block to background writer (lock-free FIFO)
+    if (isWavRecording.load(std::memory_order_relaxed))
+    {
+        if (wavWriter != nullptr)
         {
-            // Gain
-            float x = data[i] * masterGain;
-            // Soft clipper rapide (tanh approx)
-            // y = x * (27 + x^2) / (27 + 9 * x^2) ~ tanh(x) pour -2 < x < 2
-            float x2 = x * x;
-            data[i] = juce::jlimit(-1.0f, 1.0f, x * (27.0f + x2) / (27.0f + 9.0f * x2));
+            // Build a const pointer array that ThreadedWriter::write() expects
+            const int numCh = buffer.getNumChannels();
+            const int numSmp = buffer.getNumSamples();
+            juce::HeapBlock<const float*> channelPtrs ((size_t) numCh);
+            for (int ch = 0; ch < numCh; ++ch)
+                channelPtrs[ch] = buffer.getReadPointer (ch);
+            wavWriter->write (channelPtrs.getData(), numSmp);
         }
     }
 }
@@ -428,6 +637,7 @@ void EchoGrainSynthAudioProcessor::getStateInformation (juce::MemoryBlock& destD
     auto state = apvts.copyState();
     state.setProperty("selectedPresetName", selectedPresetName, nullptr);
     state.setProperty("xyMidiLinkEnabled", xyMidiLinkEnabled, nullptr);
+    midiLearnManager.saveToValueTree(state);
     
     // Add sample name to the state
     if (!sampleName.isEmpty())
@@ -462,6 +672,7 @@ void EchoGrainSynthAudioProcessor::setStateInformation (const void* data, int si
             apvts.replaceState(newState);
             selectedPresetName = newState.getProperty("selectedPresetName", "Init Empty");
             xyMidiLinkEnabled = static_cast<bool>(newState.getProperty("xyMidiLinkEnabled", true));
+            midiLearnManager.loadFromValueTree(newState);
             stateRestoredFromProject = true;
 
             const juce::String restoredSampleName = newState.getProperty("sampleName", "");
@@ -504,12 +715,6 @@ void EchoGrainSynthAudioProcessor::setStateInformation (const void* data, int si
 
                         if (grainEngine != nullptr)
                             grainEngine->setSample(loadedSample);
-
-                        for (int i = 0; i < synthesiser.getNumSounds(); ++i)
-                        {
-                            if (auto* granularSound = dynamic_cast<GranularSound*>(synthesiser.getSound(i).get()))
-                                granularSound->setSampleData(loadedSample);
-                        }
 
                         currentSampleData.audioData = decoded;
                         currentSampleData.numChannels = numChannels;
@@ -593,9 +798,33 @@ juce::AudioProcessorValueTreeState::ParameterLayout EchoGrainSynthAudioProcessor
     // Master Gain
     layout.add(std::make_unique<juce::AudioParameterFloat>("masterGain", "Master Gain", juce::NormalisableRange<float>(0.0f, 2.0f), 1.0f));
 
-    // Glitch
-    layout.add(std::make_unique<juce::AudioParameterFloat>("glitchIntensity", "Glitch Intensity", juce::NormalisableRange<float>(0.0f, 1.0f), 0.0f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("glitchRate", "Glitch Rate", juce::NormalisableRange<float>(0.5f, 20.0f), 4.0f));
+    // Delay
+    layout.add(std::make_unique<juce::AudioParameterFloat>("delayTimeMs", "Delay Time",
+                                                          juce::NormalisableRange<float>(1.0f, 2000.0f, 0.0f, 0.35f), 375.0f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("delayFeedback", "Delay Feedback",
+                                                          juce::NormalisableRange<float>(0.0f, 0.95f), 0.3f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("delayWet", "Delay Wet",
+                                                          juce::NormalisableRange<float>(0.0f, 1.0f), 0.0f));
+    layout.add(std::make_unique<juce::AudioParameterBool>("delayBpmSync", "Delay BPM Sync", false));
+    layout.add(std::make_unique<juce::AudioParameterChoice>("delaySubdivision", "Delay Subdivision",
+                                                           juce::StringArray{"1/1","1/2","1/4","1/8","1/16"}, 2)); // default 1/4
+
+    // Granular advanced
+    layout.add(std::make_unique<juce::AudioParameterBool>("freeze", "Freeze", false));
+    layout.add(std::make_unique<juce::AudioParameterChoice>("windowType", "Window Type",
+                                                           juce::StringArray{"Hanning", "Gaussian", "Rectangular", "Tukey"}, 0));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("grainSizeSpread", "Grain Size Spread",
+                                                          juce::NormalisableRange<float>(0.0f, 200.0f), 0.0f));
+
+    // LFO waveform
+    layout.add(std::make_unique<juce::AudioParameterChoice>("lfoWaveform", "LFO Shape",
+                                                           juce::StringArray{"Sine", "Square", "Triangle", "S&H"}, 0));
+
+    // GrainSize LFO
+    layout.add(std::make_unique<juce::AudioParameterFloat>("grainSizeLfoFreq", "GrainSize LFO Freq",
+                                                          juce::NormalisableRange<float>(0.01f, 10.0f, 0.0f, 0.4f), 1.0f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("grainSizeLfoDepth", "GrainSize LFO Depth",
+                                                          juce::NormalisableRange<float>(0.0f, 100.0f), 0.0f));
     
     // XY Pad mapping slots
     layout.add(std::make_unique<juce::AudioParameterChoice>("xySlot1Target", "XY Slot 1 Target", 
@@ -727,16 +956,41 @@ void EchoGrainSynthAudioProcessor::stopRecording()
     {
         isRecording = false;
         
-        // Copy recorded buffer to grain engine
         if (recordingSamplePosition > 0)
         {
             juce::AudioBuffer<float> trimmedBuffer(recordingBuffer.getNumChannels(), recordingSamplePosition);
             for (int ch = 0; ch < trimmedBuffer.getNumChannels(); ++ch)
-            {
                 trimmedBuffer.copyFrom(ch, 0, recordingBuffer, ch, 0, recordingSamplePosition);
+
+            // Write-lock: swap loadedSample safely
+            {
+                const juce::ScopedWriteLock writeLock(sampleLock);
+                loadedSample.makeCopyOf(trimmedBuffer);
             }
-            grainEngine->setSample(trimmedBuffer);
+
+            grainEngine->setSample(loadedSample);
             setSampleName("Recorded Sample");
+
+            // Persist to project state so the recording survives save/reload
+            const double sessionRate = getSampleRate() > 0.0 ? getSampleRate() : 44100.0;
+            currentSampleData.audioData.reset();
+            currentSampleData.numSamples  = loadedSample.getNumSamples();
+            currentSampleData.numChannels = loadedSample.getNumChannels();
+            currentSampleData.sampleRate  = sessionRate;
+            currentSampleData.originalPath.clear(); // no file path for recordings
+
+            const size_t dataSize = sizeof(float)
+                * static_cast<size_t>(loadedSample.getNumSamples())
+                * static_cast<size_t>(loadedSample.getNumChannels());
+            currentSampleData.audioData.setSize(dataSize);
+
+            float* dest = static_cast<float*>(currentSampleData.audioData.getData());
+            for (int ch = 0; ch < loadedSample.getNumChannels(); ++ch)
+            {
+                const float* src = loadedSample.getReadPointer(ch);
+                for (int i = 0; i < loadedSample.getNumSamples(); ++i)
+                    *dest++ = src[i];
+            }
         }
     }
 }
@@ -777,38 +1031,61 @@ void EchoGrainSynthAudioProcessor::loadSample(const juce::File& file)
     
     if (reader != nullptr)
     {
-        // Load the audio data
-        loadedSample.setSize(static_cast<int>(reader->numChannels), 
-                           static_cast<int>(reader->lengthInSamples));
-        reader->read(&loadedSample, 0, static_cast<int>(reader->lengthInSamples), 0, true, true);
-        
-        // Update the sample name
-        sampleName = file.getFileNameWithoutExtension();
-        
-        // Update the grain engine with the new sample
-        if (grainEngine != nullptr)
+        // Resample to the current session sample rate so pitch is always correct
+        const double fileSampleRate    = reader->sampleRate;
+        const double sessionSampleRate = getSampleRate() > 0.0 ? getSampleRate() : 44100.0;
+        const int    fileNumSamples    = static_cast<int>(reader->lengthInSamples);
+        const int    fileNumChannels   = static_cast<int>(reader->numChannels);
+
+        // Read raw data at native file rate
+        juce::AudioBuffer<float> rawBuffer(fileNumChannels, fileNumSamples);
+        reader->read(&rawBuffer, 0, fileNumSamples, 0, true, true);
+
+        juce::AudioBuffer<float> tempSample;
+        if (std::abs(fileSampleRate - sessionSampleRate) < 0.5)
         {
-            grainEngine->setSample(loadedSample);
+            // Same rate — no conversion needed
+            tempSample.makeCopyOf(rawBuffer);
         }
-        
-        // Update all GranularSound objects in the synthesizer with the new sample
-        for (int i = 0; i < synthesiser.getNumSounds(); ++i)
+        else
         {
-            if (auto* granularSound = dynamic_cast<GranularSound*>(synthesiser.getSound(i).get()))
+            // Resample with JUCE's LagrangeInterpolator
+            const double ratio       = fileSampleRate / sessionSampleRate;
+            const int    outSamples  = juce::roundToInt(static_cast<double>(fileNumSamples) / ratio);
+            tempSample.setSize(fileNumChannels, outSamples);
+
+            for (int ch = 0; ch < fileNumChannels; ++ch)
             {
-                granularSound->setSampleData(loadedSample);
+                juce::LagrangeInterpolator resampler;
+                resampler.reset();
+                const float* src = rawBuffer.getReadPointer(ch);
+                float*       dst = tempSample.getWritePointer(ch);
+                resampler.process(ratio, src, dst, outSamples);
             }
         }
+
+        // Write-lock: swap loadedSample atomically relative to any processBlock read
+        {
+            const juce::ScopedWriteLock writeLock(sampleLock);
+            loadedSample.makeCopyOf(tempSample);
+        }
+
+        // Update the sample name
+        sampleName = file.getFileNameWithoutExtension();
+
+        // Push the new sample to the grain engine (it makes its own internal copy)
+        if (grainEngine != nullptr)
+            grainEngine->setSample(loadedSample);
         
-        // Store sample data for persistence
+        // Store sample data for persistence / state saving (always at session rate)
         currentSampleData.audioData.reset();
-        currentSampleData.numSamples = loadedSample.getNumSamples();
-        currentSampleData.numChannels = loadedSample.getNumChannels();
-        currentSampleData.sampleRate = reader->sampleRate;
+        currentSampleData.numSamples   = loadedSample.getNumSamples();
+        currentSampleData.numChannels  = loadedSample.getNumChannels();
+        currentSampleData.sampleRate   = sessionSampleRate;   // already resampled
         currentSampleData.originalPath = file.getFullPathName();
         
-        // Convert audio data to memory block for state saving
-        size_t dataSize = sizeof(float) * loadedSample.getNumSamples() * loadedSample.getNumChannels();
+        const size_t dataSize = sizeof(float) * static_cast<size_t>(loadedSample.getNumSamples())
+                                              * static_cast<size_t>(loadedSample.getNumChannels());
         currentSampleData.audioData.setSize(dataSize);
         
         float* dest = static_cast<float*>(currentSampleData.audioData.getData());
@@ -816,12 +1093,8 @@ void EchoGrainSynthAudioProcessor::loadSample(const juce::File& file)
         {
             const float* src = loadedSample.getReadPointer(ch);
             for (int i = 0; i < loadedSample.getNumSamples(); ++i)
-            {
                 *dest++ = src[i];
-            }
         }
-        
-        DBG("Sample loaded: " + sampleName + " (" + juce::String(loadedSample.getNumSamples()) + " samples)");
     }
 }
 

@@ -35,26 +35,66 @@ void EchoGrainLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int
     const auto accent = findAccentForSlider(slider);
     const auto angle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
 
+    // ── Outer ambient glow ──
+    juce::ColourGradient outerGlow(accent.withAlpha(0.18f), centre.x, centre.y,
+                                    juce::Colours::transparentBlack, bounds.getX(), centre.y, true);
+    g.setGradientFill(outerGlow);
+    g.fillEllipse(bounds.expanded(radius * 0.22f));
+
+    // ── Background track ──
+    juce::Path trackArc;
+    trackArc.addCentredArc(centre.x, centre.y, radius - 2.5f, radius - 2.5f, 0.0f,
+                            rotaryStartAngle, rotaryEndAngle, true);
+    g.setColour(juce::Colours::white.withAlpha(0.07f));
+    g.strokePath(trackArc, juce::PathStrokeType(2.7f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+
+    // ── Value arc glow (wide, soft) ──
+    if (sliderPosProportional > 0.001f)
+    {
+        juce::Path glowArc;
+        glowArc.addCentredArc(centre.x, centre.y, radius - 2.5f, radius - 2.5f, 0.0f,
+                               rotaryStartAngle, angle, true);
+        g.setColour(accent.withAlpha(0.22f));
+        g.strokePath(glowArc, juce::PathStrokeType(6.0f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+    }
+
+    // ── Value arc (crisp) ──
     juce::Path valueArc;
     valueArc.addCentredArc(centre.x, centre.y, radius - 2.5f, radius - 2.5f, 0.0f,
                            rotaryStartAngle, angle, true);
-    g.setColour(accent.withAlpha(0.88f));
+    g.setColour(accent.withAlpha(0.92f));
     g.strokePath(valueArc, juce::PathStrokeType(2.7f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
 
-    juce::ColourGradient shell(juce::Colour::fromString("#1A2433"), bounds.getTopLeft(),
-                               juce::Colour::fromString("#0D121B"), bounds.getBottomRight(), false);
+    // ── Knob body ──
+    const auto knobArea = bounds.reduced(radius * 0.24f);
+    juce::ColourGradient shell(juce::Colour::fromString("#1E2D40"), knobArea.getTopLeft(),
+                               juce::Colour::fromString("#0D121B"), knobArea.getBottomRight(), false);
     g.setGradientFill(shell);
-    g.fillEllipse(bounds.reduced(radius * 0.24f));
-    g.setColour(juce::Colours::white.withAlpha(0.06f));
-    g.drawEllipse(bounds.reduced(radius * 0.24f), 1.0f);
+    g.fillEllipse(knobArea);
 
+    // ── Rim ──
+    g.setColour(accent.withAlpha(0.20f));
+    g.drawEllipse(knobArea, 1.1f);
+
+    // ── Specular highlight ──
+    const float specW = radius * 0.30f;
+    const float specH = radius * 0.16f;
+    juce::ColourGradient spec(juce::Colours::white.withAlpha(0.26f),
+                               centre.x - radius * 0.10f, knobArea.getY() + radius * 0.24f,
+                               juce::Colours::transparentBlack,
+                               centre.x - radius * 0.10f, knobArea.getY() + radius * 0.24f + specH * 2.0f, false);
+    g.setGradientFill(spec);
+    g.fillEllipse(centre.x - specW * 0.5f - radius * 0.10f, knobArea.getY() + radius * 0.24f, specW, specH);
+
+    // ── Pointer ──
     juce::Path pointer;
-    pointer.addRoundedRectangle(-1.7f, -radius + 10.0f, 3.4f, radius * 0.45f, 1.2f);
-    g.setColour(juce::Colours::white.withAlpha(0.85f));
+    pointer.addRoundedRectangle(-1.5f, -radius + 10.0f, 3.0f, radius * 0.42f, 1.1f);
+    g.setColour(juce::Colours::white.withAlpha(0.88f));
     g.fillPath(pointer, juce::AffineTransform::rotation(angle).translated(centre.x, centre.y));
 
-    g.setColour(accent.withAlpha(0.65f));
-    g.fillEllipse(centre.x - 2.2f, centre.y - 2.2f, 4.4f, 4.4f);
+    // ── Centre dot ──
+    g.setColour(accent.withAlpha(0.75f));
+    g.fillEllipse(centre.x - 2.0f, centre.y - 2.0f, 4.0f, 4.0f);
 }
 
 void EchoGrainLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& button,

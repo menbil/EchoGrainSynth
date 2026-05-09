@@ -67,11 +67,17 @@ public:
     void prepareToPlay(double sampleRate, int samplesPerBlock);
     void processBlock(juce::AudioBuffer<float>& buffer, int numSamples);
     void setSample(const juce::AudioBuffer<float>& newSample);
+    // Silence all active grains immediately (call from releaseResources)
+    void reset();
     
     // Grain parameters
     void setGrainSize(float size) { grainSize = juce::jlimit(10.0f, 600.0f, size); }
     void setGrainDensity(float density) { grainDensity = juce::jlimit(0.1f, 30.0f, density); }
-    void setPosition(float pos) { playbackPosition = juce::jlimit(0.0f, 1.0f, pos); }
+    void setPosition(float pos)
+    {
+        if (!freeze)
+            playbackPosition = juce::jlimit(0.0f, 1.0f, pos);
+    }
     void setPositionSpread(float spread) { positionSpread = juce::jlimit(0.0f, 1.0f, spread); }
     void setPitch(float pitchRatio) { pitch = juce::jlimit(0.1f, 4.0f, pitchRatio); }
     void setPitchSpread(float spread) { pitchSpread = juce::jlimit(0.0f, 12.0f, spread); }
@@ -88,6 +94,24 @@ public:
     }
     float getSampleRangeStart() const { return sampleRangeStart; }
     float getSampleRangeEnd()   const { return sampleRangeEnd; }
+
+    // Window envelope shape for grain amplitude shaping
+    enum class WindowType { Hanning = 0, Gaussian = 1, Rectangular = 2, Tukey = 3 };
+    void setWindowType(WindowType type) { windowType = type; }
+    WindowType getWindowType() const    { return windowType; }
+
+    // Freeze: locks playbackPosition so grains always read from same spot
+    void setFreeze(bool shouldFreeze)
+    {
+        if (shouldFreeze && !freeze)
+            frozenPosition = playbackPosition;  // capture position at freeze onset
+        freeze = shouldFreeze;
+    }
+    bool isFrozen() const { return freeze; }
+
+    // Grain size spread: random ±spreadMs variation per grain
+    void setGrainSizeSpread(float spreadMs) { grainSizeSpread = juce::jlimit(0.0f, 200.0f, spreadMs); }
+    float getGrainSizeSpread() const        { return grainSizeSpread; }
     
     // ADSR Envelope (replacing simple attack/release)
     void setADSRAttack(float attack) { adsrAttack = juce::jlimit(0.0f, 600.0f, attack); }
@@ -99,6 +123,7 @@ public:
     void setMIDIPitchRatio(float ratio) { midiPitchRatio = ratio; }
     void setPitchBend(float bendSemitones) { pitchBendSemitones = bendSemitones; }
     void setMIDITriggered(bool triggered) { midiTriggered = triggered; }
+    void setNoteVelocity(float v) { midiNoteVelocity = juce::jlimit(0.0f, 1.0f, v); }
     void triggerGrainForNote(int noteNumber, float velocity);
     void releaseNote(int noteNumber);
     
@@ -130,12 +155,20 @@ private:
     float sampleRangeStart = 0.0f;
     float sampleRangeEnd   = 1.0f;
 
+    // Grain shaping / freeze / size spread
+    WindowType windowType    = WindowType::Hanning;
+    bool       freeze        = false;
+    float      frozenPosition = 0.0f;
+    float      grainSizeSpread = 0.0f;   // ms
+
     juce::AudioBuffer<float> sampleBuffer;
     double sampleRate = 44100.0;
     
     // Grain parameters
     float grainSize = 100.0f;        // ms
-    float grainDensity = 10.0f;      // grains per second
+    float grainDensity = 10.0f;      // grains per second (target)
+    float smoothedDensity = 10.0f;   // exponentially smoothed density (anti-zipper)
+    float densitySmoothCoeff = 0.0f; // one-pole coefficient, set in prepareToPlay
     float playbackPosition = 0.0f;   // 0-1
     float positionSpread = 0.1f;     // 0-1
     float pitch = 1.0f;              // pitch ratio
@@ -152,6 +185,7 @@ private:
     
     // MIDI Sampler parameters
     float midiPitchRatio = 1.0f;     // Current MIDI pitch ratio
+    float midiNoteVelocity = 1.0f;   // Velocity from most-recent note-on (0..1)
     float pitchBendSemitones = 0.0f; // Current pitch bend
     bool midiTriggered = false;      // Whether grains are triggered by MIDI only
     
